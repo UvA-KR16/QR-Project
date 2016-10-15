@@ -103,9 +103,9 @@ def isValid(state):
 	# TODO
 	return False
 
-def constraints (state):
+def expand (state):
 	# TODO by Aashish
-	return []
+	return [] # return a list of possible states
 
 
 def possibleStates(IF, DIF, V):
@@ -126,11 +126,11 @@ def main (IF, DIF, V):
 		combinations = constraints(s)
 		for c in combinations:
 			#create a state for each combination
-			s = State(c[0], c[1],c[2],c[3],c[4], c[5], c[6])
+			# s = State(c[0], c[1],c[2],c[3],c[4], c[5], c[6])
 			#build up link between currentState and s
-			Connection.append(currentState.index, s.index)
-			if not(s in ToExpand or s in Expanded):
-				ToExpand.append(s)
+			Connection.append(currentState.index, c.index)
+			if not(c in ToExpand or c in Expanded):
+				ToExpand.append(c)
 
 	# next, illustrate the state-graph
 
