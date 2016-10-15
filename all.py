@@ -39,7 +39,9 @@ class State ():
 		self.__OF = OF
 		self.__DOF = DOF
 
-
+def isValid(state):
+	# TODO
+	return False
 
 def constraints (state):
 	# TODO by Aashish
@@ -47,6 +49,7 @@ def constraints (state):
 
 
 def possibleStates(IF, DIF, V):
+	#TODO by Aashish
 	return []
 
 def main (IF, DIF, V):
@@ -70,7 +73,7 @@ def main (IF, DIF, V):
 				ToExpand.append(s)
 
 	# next, illustrate the state-graph
-	
+
 
 
 if __name__ == "__main__":
