@@ -1,4 +1,5 @@
 import sys
+from graphviz import Digraph
 
 IFZero = 0
 IFPos = 1
@@ -11,13 +12,17 @@ VZero = 5
 VPos = 6
 VMax = 7
 
-OFZero = 8
-OFPos = 9
-OFMax = 10
+DVZero = 8
+DVPos = 9
+DVNeg = 10
 
-OFNeg = 11
-OFPos = 6
-OFZero = 7
+OFZero = 11
+OFPos = 12
+OFMax = 13
+
+DOFNeg = 14
+DOFPos = 15
+DOFZero = 16
 
 Expanded = []
 ToExpand = []
@@ -31,13 +36,68 @@ class State ():
 	global index
 	def __init__(self, IF, DIF, V, DV, OF, DOF):
 		index = index + 1 
-		self.__index = index + 1
-		self.__IF = IF
-		self.__DIF = DIF
-		self.__V = V
-		self.__DV = DV
-		self.__OF = OF
-		self.__DOF = DOF
+		self.index = index + 1
+		self.IF = IF
+		self.DIF = DIF
+		self.V = V
+		self.DV = DV
+		self.OF = OF
+		self.DOF = DOF
+		self.string = 'index = ' + str(self.index) + '\n'
+		self.string += 'IF: '
+		if IF == IFZero:
+			self.string += '0'
+		elif IF == IFPos:
+			self.string += '+' 
+
+		self.string += ' DIF: '
+		if DIF == DIFZero:
+			self.string += '0'
+		elif DIF == DIFPos:
+			self.string += '+' 
+		elif DIF == DIFNeg:
+			self.string += '-'
+
+		self.string += '\n'
+
+
+		self.string += 'V: '
+		if V == VZero:
+			self.string += '0'
+		elif V == VPos:
+			self.string += '+' 
+		elif V == VMax:
+			self.string += 'M' 
+
+		self.string += ' DV: '
+		if DV == DVZero:
+			self.string += '0'
+		elif DV == DVPos:
+			self.string += '+' 
+		elif DV == DVNeg:
+			self.string += '-'
+
+		self.string += '\n'
+
+
+		self.string += 'OF: '
+		if OF == OFZero:
+			self.string += '0'
+		elif OF == OFPos:
+			self.string += '+' 
+		elif OF == OFMax:
+			self.string += 'M'
+
+		self.string += ' DOF: '
+		if DOF == DOFZero:
+			self.string += '0'
+		elif DOF == DOFPos:
+			self.string += '+' 
+		elif DOF == DOFNeg:
+			self.string += '-'
+
+		
+
 
 def isValid(state):
 	# TODO
@@ -74,6 +134,25 @@ def main (IF, DIF, V):
 
 	# next, illustrate the state-graph
 
+	s1 = State(0,0,0,0,0,0)
+	s2 = State(0,0,0,0,0,0)
+	s3 = State(0,0,0,0,0,0)
+
+	Connection.append((s1.index, s2.index))
+	Connection.append((s2.index, s3.index))
+	Connection.append((s3.index, s1.index))
+	
+	dot = Digraph (comment = 'test')
+
+	dot.node(str(s1.index), s1.string)
+	dot.node(str(s2.index), s2.string)
+	dot.node(str(s3.index), s3.string)
+
+	dot.edge(str(s2.index) , str(s1.index) , constraint = 'false')
+	dot.edge(str(s2.index) , str(s3.index) , constraint = 'false')
+	#next, use graphviz and export the states as images
+
+	dot.render('test.gv', view=True)
 
 
 if __name__ == "__main__":
