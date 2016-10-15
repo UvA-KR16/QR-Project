@@ -1,34 +1,19 @@
 import sys
 from graphviz import Digraph
 
-IFZero = 0
-IFPos = 1
-
-DIFZero = 2
-DIFPos = 3
-DIFNeg = 4
-
-VZero = 5
-VPos = 6
-VMax = 7
-
-DVZero = 8
-DVPos = 9
-DVNeg = 10
-
-OFZero = 11
-OFPos = 12
-OFMax = 13
-
-DOFNeg = 14
-DOFPos = 15
-DOFZero = 16
+ZERO  = 0
+POS  = 1
+NEG = 2
+MAX = 3
 
 Expanded = []
 ToExpand = []
 Connection = []
 
-
+AllStates = []
+ValidStates = []
+StableStates = []
+UnstableStates =[]
 
 index = 0
 
@@ -97,11 +82,91 @@ class State ():
 			self.string += '-'
 
 		
-
-
-def isValid(state):
-	# TODO
+def isStable(s):
+	if s.IF = ZERO and s.DIF == ZERO and s.V == ZERO and  s.DV == ZERO and s.OF == ZERO and s.DOF == ZERO:
+		return True
+	if s.IF == POS and s.DOF == ZERO and s.V = MAX and s.DV == ZERO and s.OF == MAX and s.DOF == ZERO:
+		return True
+	if s.IF == POS and s.DOF == NEG and s.V = POS and s.DV == NEG and s.OF == POS and s.DOF == NEG:
+		return True
+	if s.IF == POS and s.DOF == POS and s.V = POS and s.DV == POS and s.OF == POS and s.DOF == POS:
+		return True
+	
 	return False
+
+
+
+def isValid(s):
+	if s.IF == ZERO  and s.DIF = NEG and s.V == ZERO and s.DV == ZERO  and s.OF = ZERO  and s.DOF == ZERO
+		return False
+
+	if s.IF == ZERO  and s.DIF = NEG and s.V == ZERO and s.DV == POS  and s.OF = ZERO  and s.DOF == POS
+		return False
+
+	if s.IF == ZERO  and s.DIF = NEG and s.V == POS and s.DV == POS  and s.OF = POS and s.DOF == POS
+		return False
+
+	if s.IF == ZERO  and s.DIF = NEG and s.V == MAX and s.DV == ZERO  and s.OF = MAX and s.DOF == ZERO
+		return False
+
+	if s.IF == ZERO  and s.DIF = NEG and s.V == MAX and s.DV == POS  and s.OF = MAX and s.DOF == POS
+		return False
+
+	if s.IF == ZERO  and s.DIF = ZERO and s.V == ZERO and s.DV == POS  and s.OF = ZERO and s.DOF == POS
+		return False
+
+	if s.IF == ZERO  and s.DIF = ZERO and s.V == MAX and s.DV == POS  and s.OF = MAX and s.DOF == POS
+		return False
+
+	if s.IF == ZERO  and s.DIF = POS and s.V == ZERO and s.DV == NEG  and s.OF = ZERO and s.DOF == NEG
+		return False
+
+	if s.IF == ZERO  and s.DIF = POS and s.V == ZERO and s.DV == POS  and s.OF = ZERO and s.DOF == POS
+		return False
+
+	if s.IF == POS  and s.DIF = NEG and s.V == ZERO and s.DV == NEG  and s.OF = ZERO and s.DOF == NEG
+		return False
+
+	if s.IF == POS  and s.DIF = ZERO and s.V == ZERO and s.DV == NEG  and s.OF = ZERO and s.DOF == NEG
+		return False
+
+	if s.IF == POS  and s.DIF = POS and s.V == ZERO and s.DV == ZERO  and s.OF = ZERO and s.DOF == ZERO
+		return False
+
+
+	if s.IF == POS  and s.DIF = POS and s.V == MAX and s.DV == NEG  and s.OF = MAX and s.DOF == NEG
+		return False
+
+	if s.IF == POS  and s.DIF = POS and s.V == ZERO and s.DV == NEG  and s.OF = ZERO and s.DOF == NEG
+		return False
+
+return True
+
+
+def addHumanConnections():
+	for a in StableStates:
+		if a.DIF == NEG :
+			s.DIF = ZERO
+			#add to the stack if valid
+		if a.DIF == POS :
+			s.DIF = ZERO
+		if a.DIF == ZERO:
+			s1.DIF = POS
+			s2.DIF = NEG
+
+def addUnstableConnections():
+	for a in UnstableStates:
+		# unstable because of human
+		if a.DIF == POS and a.IF == ZERO  and a.DV == ZERO :
+			s.DIF = POS and s.IF = POS and s.DV = POS:
+		if a.DIF == ZERO and a.IF = POS  and a.DV == POS:
+			s.DIF = ZERO and s.IF = POS and s.DV = NEG
+
+def addMaxConnnections():
+	for a in ValidStates:
+		if a.IF == POS and a.DIF == ZERO and a.V == POS and a.DV == POS and a.OF == POS and a.DOF == POS:
+			s.V = MAX and s.OF = MAX
+
 
 def expand (state):
 	# TODO by Aashish
