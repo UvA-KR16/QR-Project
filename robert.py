@@ -250,6 +250,26 @@ def drawTrace (states, conn, connInter):
 
 	dot.render('trace.gv', view=True) 
 
+
+def drawShortestPath(states, conn, connInter, path):
+	dot = Digraph (comment = 'trace')
+	for s in sum(states.values(), []):
+		dot.node(s.toString(), s.status(0))
+
+	l = sum(conn.values(), [])
+	k = sum(connInter.values(), [])
+	for (s, t) in  list(set(l + k)):
+		flag = False
+		for i in range(len(path) -1):
+			if path[i] == s and path[i+1] == t:
+				flag = True
+		if flag : 
+			dot.edge(s.toString(), t.toString(), color = 'red')
+		else: 
+			dot.edge(s.toString(), t.toString())
+	dot.render('trace.gv', view=True)
+
+
 				
 
 def shortestPath (s0, states, conn, connInter, DIFlist):
@@ -353,23 +373,22 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 
 
 
-
-
-
 def  main():
 	buildAllStates()
 	buildConnections ()
 	# draw()
-	# s = State(POS,NEG,POS,ZERO)
-	# (visitedStates, conn) = trace(s, [NEG, ZERO,POS,ZERO])
-	s = State(ZERO,POS,ZERO,ZERO)
-	DIFlist = [POS, ZERO,NEG,ZERO]
+	s = State(POS,NEG,POS,ZERO)
+	DIFlist = [NEG, ZERO,POS,ZERO]
 	(states, conn, connInter) = trace(s, DIFlist)
+	# s = State(ZERO,POS,ZERO,ZERO)
+	# DIFlist = [POS, ZERO,NEG,ZERO]
+	# (states, conn, connInter) = trace(s, DIFlist)
 	# drawTrace(states, conn, connInter)
 	path =  shortestPath(s, states, conn, connInter, DIFlist)
 	print 'print path: '
 	for p in path:
 		print p.toString()
+	drawShortestPath(states, conn, connInter, path)
 
 
 
