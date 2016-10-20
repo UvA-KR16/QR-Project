@@ -248,8 +248,10 @@ def  main():
 	buildAllStates()
 	buildConnections ()
 	# draw()
-	s = State(POS,NEG,POS,NEG)
-	(visitedStates, conn) = trace(s, [NEG, ZERO, POS])
+	# s = State(POS,NEG,POS,ZERO)
+	# (visitedStates, conn) = trace(s, [NEG, ZERO,POS,ZERO])
+	s = State(ZERO,POS,ZERO,ZERO)
+	(visitedStates, conn) = trace(s, [POS, ZERO,NEG,ZERO])
 	drawTrace(visitedStates, conn)
 
 
