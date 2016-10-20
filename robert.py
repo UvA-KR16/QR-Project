@@ -27,7 +27,7 @@ class State ():
 		return str(d)
 
 	def status(self, index):
-		s = str(index) + '\n'
+		s = str(index) + ' '
 
 		if self.IF == ZERO:
 			s += '0'
@@ -42,7 +42,7 @@ class State ():
 		else:
 			s += '-'
 
-		s += '\n'
+		s += ' '
 
 		# self.string += 'V: '
 		if self.V == ZERO:
@@ -60,7 +60,7 @@ class State ():
 		else:
 			s += '-'
 
-		s += '\n'
+		s += ' '
 
 		# s += 'V: '
 		if self.V == ZERO:
@@ -78,7 +78,7 @@ class State ():
 		else:
 			s += '-'
 
-		s += '\n'
+		# s += '\n'
 		return s
 
 
@@ -131,6 +131,7 @@ def buildConnections ():
 	addConnection(7,8, Connection)
 	addConnection(9,12, Connection)
 	addConnection(10,13, Connection)
+	addConnection(11,14, Connection)
 	addConnection(12,13, Connection)
 	addConnection(13,3, Connection)
 	addConnection(13,7, Connection)
@@ -179,32 +180,54 @@ def trace (state, DIFlist):
 	# Visited = [state]
 
 	newConnection = []
+	visitedStates = []
 	CanAccess = {} 
 	CanAccess[state.DIF] = [state]
 	for i in range(len(DIFlist)):
 		d = DIFlist[i]
-
+		# print 'I am currently dealing with ', d
 		# denote a list of nodes to visit
 		toVisit = copy.copy(CanAccess[d]) 
 		while len(toVisit) != 0:
 			s = toVisit [0] #pick a state
+			# print 'visiting ', s.status(0)
 			for t in AllStates:
 				if (s.toString(), t.toString()) in Connection:
 					if t.DIF == d:
 						# this is the situation that we need to add to the accessible next states
+						# print '\t it has access to', t.status(0)
 						CanAccess[d].append(t) 
 						toVisit.append(t)
-						newConnection.append(s.toString(), t.toString())
+						newConnection.append((s.toString(), t.toString()))
 			toVisit.remove(s) 
 		# prepare the next d
 		if (CanAccess[d] != [] and i+1 != len(DIFlist)):
 			d_next = DIFlist[i+1]
 			CanAccess[d_next] = []
 			for t in AllStates:
-				if (s.toString(), to.toString()) in Connection:
+				if (s.toString(), t.toString()) in Connection:
 					if t.DIF == d_next:
 						CanAccess[d_next].append(t)
+						newConnection.append((s.toString(), t.toString()))
+			# print '\t\t----prepare the next to visit-----'
+			# for n in CanAccess[d_next]:
+				# print '\t\t\tstates in preparation', n.status(0)
+		# print '\n', d
+		for s in CanAccess[d]:
+			visitedStates.append(s)
 
+		visitedStates = list(set(visitedStates))
+
+	return (visitedStates, newConnection)
+
+def drawTrace (states, conn):
+	dot = Digraph (comment = 'trace')
+	for s in states:
+		dot.node(s.toString(), s.status(0))
+	for (s, t) in conn:
+		dot.edge(s, t)
+
+	dot.render('trace.gv', view=True)
 
 
 
@@ -215,7 +238,12 @@ def trace (state, DIFlist):
 def  main():
 	buildAllStates()
 	buildConnections ()
-	draw()
+	# draw()
+	s = State(0,0,0,0)
+	(visitedStates, conn) = trace(s, [ZERO, POS, ZERO, NEG])
+	drawTrace(visitedStates, conn)
+
+
 
 
 if __name__ == "__main__":
