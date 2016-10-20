@@ -1,6 +1,7 @@
 import sys
 from graphviz import Digraph
 import copy
+import numpy
 
 ZERO  = 0
 POS  = 1
@@ -208,7 +209,7 @@ def trace (state, DIFlist):
 						print '\t it has access to', t.status(0)
 						CanAccess[d].append(t) 
 						toVisit.append(t)
-						newConn[d].append((s.toString(), t.toString()))
+						newConn[d].append((s, t))
 			toVisit.remove(s) 
 		# prepare the next d
 		if (CanAccess[d] != [] and i+1 != len(DIFlist)):
@@ -221,7 +222,7 @@ def trace (state, DIFlist):
 							print '\t prepare it has access to', t.status(0)
 							CanAccess[d_next].append(t)
 							print '\t\tafter adding, it has ', len(CanAccess[d_next]) , ' to visit'
-							newConnInterLevel[d_next].append((s.toString(), t.toString()))
+							newConnInterLevel[d_next].append((s, t))
 			print 'from prediction, there are at least', len(CanAccess[d_next]), ' nodes to visit'
 			# print '\t\t----prepare the next to visit-----'
 			# for n in CanAccess[d_next]:
@@ -243,11 +244,88 @@ def drawTrace (states, conn, connInter):
 	l = sum(conn.values(), [])
 	k = sum(connInter.values(), [])
 	for (s, t) in  list(set(l + k)):
-		dot.edge(s, t)
+		dot.edge(s.toString(), t.toString())
 
 	dot.render('trace.gv', view=True) 
 
 				
+
+def shortestPath (s0, states, conn, connInter, DIFlist):
+	backtrace = {} 
+	m = []
+	for d in DIFlist:
+		distance = {}
+		m.append(distance)
+	
+	m[0][s0] = 0
+	for i in range(len(DIFlist)):
+		#initialise the
+		d = DIFlist[i]
+		for t in states[d]:
+			if t not in states[d].keys()
+				m[i][t] = 1000000 #initialise it's distance to infinity
+
+		toVisit = states[d]
+		nextVisit = s0 #a random state
+		#always visit the next closest one
+		while len(toVisit) != 0 :
+			for (t1, t2) in conn[d]: 
+				if (t1 == nextVisit):
+					if m[i][t2] > m[i][t1] + 1:
+						m[i][t2] = m[i][t1] + 1
+						backtrace[t2] = t1
+			toVisit.remove(nextVisit) #???
+			# after visiting all the nodes, select a next one to visit, it must be the losest one
+			dis = 1000000
+			for a in toVisit :
+				if dis > m[i][a]:
+					dis = m[i][a]
+					nextVisit = a
+		# next , update the inter level edges if it is not the last level
+		# next visit ?
+		dis = 1000000
+		for a in states[d]:
+			if dis > m[i][a]:
+				dis = m[i][a]
+				nextVisit = a
+
+		if i+1 != len(DIFlist):
+			d_next = DIFlist[i+1]
+			toVisit = copy.copy(states[d_next])
+			while toVisit != []:
+				#update the distance to the next level
+				for (t1, t2) in connInter[d]:
+					if (t1 == nextVisit):
+						if m[i+1][t2] > m[i][t1] + 1:
+							m[i+1][t2] = m[i][t1] + 1
+							backtrace[t2] = t1
+				toVisit.remove(nextVisit)
+				# after visiting all the nodes, select a next one to visit, it must be the closest one
+				dis = 1000000
+				for a in states[d]:
+					if dis > m[i][a]:
+						dis = m[i][a]
+						nextVisit = a
+
+	# return the backtrace
+	lastLevelStates = states[DIFlist[-1]]
+	dis = 1000000
+	for a in lastLevelStates:
+		if dis > m[i][a]:
+			dis = m[i][a]
+			nextVisit = a
+
+	backlist = [nextVisit]
+	while nextVisit != s0:
+		backlist.append(backtrace[nextVisit])
+		nextVisit = backtrace[nextVisit]
+	backlist.append(s0)
+	path = backlist.reverse()
+	return path
+
+
+
+
 
 
 
@@ -258,10 +336,10 @@ def  main():
 	# s = State(POS,NEG,POS,ZERO)
 	# (visitedStates, conn) = trace(s, [NEG, ZERO,POS,ZERO])
 	s = State(ZERO,POS,ZERO,ZERO)
-	(visitedStates, conn, connInter) = trace(s, [POS, ZERO,NEG,ZERO])
-	print conn
-	print connInter
-	drawTrace(visitedStates, conn, connInter)
+	DIFlist = [POS, ZERO,NEG,ZERO]
+	(states, conn, connInter) = trace(s, DIFlist)
+	drawTrace(states, conn, connInter)
+	# shortestPath(s, states, conn, connInter, DIFlist)
 
 
 
