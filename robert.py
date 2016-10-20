@@ -95,7 +95,7 @@ def buildAllStates ():
 	AllStates.append(State(ZERO, POS, ZERO, ZERO))
 	AllStates.append(State(POS, NEG, POS, ZERO))
 	AllStates.append(State(POS, ZERO, POS, ZERO))
-	AllStates.append(State(POS, POS, ZERO, ZERO)) # 5
+	AllStates.append(State(POS, POS, POS, ZERO)) # 5
 	AllStates.append(State(POS, NEG, MAX, ZERO))
 	AllStates.append(State(POS, ZERO, MAX, ZERO))
 	AllStates.append(State(POS, POS, MAX, ZERO)) # 8
@@ -147,13 +147,14 @@ def buildConnections ():
 	addConnection(16,19, Connection)
 	addConnection(17,1, Connection)
 	addConnection(17,15, Connection)
-	addConnection(17,18, Connection)
+	addConnection(17,4, Connection)
 	# addConnection(17,15)
 	addConnection(18,17, Connection)
 	addConnection(18,19, Connection)
 	addConnection(18,5, Connection)
 	addConnection(18,4, Connection)
 	addConnection(19,18, Connection)
+	addConnection(19,5, Connection)
 	addConnection(20,16, Connection)
 	addConnection(20,15, Connection)
 	addConnection(21,19, Connection)
@@ -185,17 +186,18 @@ def trace (state, DIFlist):
 	CanAccess[state.DIF] = [state]
 	for i in range(len(DIFlist)):
 		d = DIFlist[i]
-		# print 'I am currently dealing with ', d
+		print 'I am currently dealing with ', d
 		# denote a list of nodes to visit
 		toVisit = copy.copy(CanAccess[d]) 
-		while len(toVisit) != 0:
+		print 'there are ', len(toVisit), ' states to visit'
+		while len(toVisit) != 0: 
 			s = toVisit [0] #pick a state
-			# print 'visiting ', s.status(0)
+			print 'visiting ', s.status(0)
 			for t in AllStates:
 				if (s.toString(), t.toString()) in Connection:
 					if t.DIF == d:
 						# this is the situation that we need to add to the accessible next states
-						# print '\t it has access to', t.status(0)
+						print '\t it has access to', t.status(0)
 						CanAccess[d].append(t) 
 						toVisit.append(t)
 						newConnection.append((s.toString(), t.toString()))
@@ -204,19 +206,26 @@ def trace (state, DIFlist):
 		if (CanAccess[d] != [] and i+1 != len(DIFlist)):
 			d_next = DIFlist[i+1]
 			CanAccess[d_next] = []
-			for t in AllStates:
-				if (s.toString(), t.toString()) in Connection:
-					if t.DIF == d_next:
-						CanAccess[d_next].append(t)
-						newConnection.append((s.toString(), t.toString()))
+			for s in CanAccess[d]:
+				print 'prepare-visiting ', s.status(0)
+				for t in AllStates:
+					if (s.toString(), t.toString()) in Connection:
+						if t.DIF == d_next:
+							print '\t prepare it has access to', t.status(0)
+							CanAccess[d_next].append(t)
+							print '\t\tafter adding, it has ', len(CanAccess[d_next]) , ' to visit'
+							newConnection.append((s.toString(), t.toString()))
+			print 'from prediction, there are at least', len(CanAccess[d_next]), ' nodes to visit'
 			# print '\t\t----prepare the next to visit-----'
 			# for n in CanAccess[d_next]:
 				# print '\t\t\tstates in preparation', n.status(0)
 		# print '\n', d
+
 		for s in CanAccess[d]:
 			visitedStates.append(s)
 
 		visitedStates = list(set(visitedStates))
+		newConnection = list (set (newConnection))
 
 	return (visitedStates, newConnection)
 
@@ -239,8 +248,8 @@ def  main():
 	buildAllStates()
 	buildConnections ()
 	# draw()
-	s = State(0,0,0,0)
-	(visitedStates, conn) = trace(s, [ZERO, POS, ZERO, NEG])
+	s = State(POS,NEG,POS,NEG)
+	(visitedStates, conn) = trace(s, [NEG, ZERO, POS])
 	drawTrace(visitedStates, conn)
 
 
