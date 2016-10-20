@@ -114,52 +114,52 @@ def buildAllStates ():
 	AllStates.append(State(POS, NEG, MAX, NEG))
 	AllStates.append(State(POS, ZERO, MAX, NEG))# 23
 	AllStates.append(State(POS, POS, MAX, NEG))
-def addConnection(i, j):
-	global Connection
+def addConnection(i, j, Connection):
 	global AllStates
 	Connection.append((AllStates[i-1].toString(), AllStates[j-1].toString()))
 
 def buildConnections ():
-	addConnection(1,2)
-	addConnection(2,11)
-	addConnection(3,17)
-	addConnection(4,5)
-	addConnection(5,14)
-	addConnection(6,22)
-	addConnection(7,6)
-	addConnection(7,8)
-	addConnection(9,12)
-	addConnection(10,13)
-	addConnection(12,13)
-	addConnection(13,3)
-	addConnection(13,7)
-	addConnection(13,6)
-	addConnection(13,7)
-	addConnection(13,14)
-	addConnection(13,4)
-	addConnection(13,3)
-	addConnection(14,7)
-	addConnection(15,1)
-	addConnection(15,2)
-	addConnection(15,16)
-	addConnection(16,19)
-	addConnection(17,1)
-	addConnection(17,15)
-	addConnection(17,18)
+	global Connection
+	addConnection(1,2, Connection)
+	addConnection(2,11, Connection)
+	addConnection(3,17, Connection)
+	addConnection(4,5, Connection)
+	addConnection(5,14, Connection)
+	addConnection(6,22, Connection)
+	addConnection(7,6, Connection)
+	addConnection(7,8, Connection)
+	addConnection(9,12, Connection)
+	addConnection(10,13, Connection)
+	addConnection(12,13, Connection)
+	addConnection(13,3, Connection)
+	addConnection(13,7, Connection)
+	addConnection(13,6, Connection)
+	addConnection(13,7, Connection)
+	addConnection(13,14, Connection)
+	addConnection(13,4, Connection)
+	addConnection(13,3, Connection)
+	addConnection(14,7, Connection)
+	addConnection(15,1, Connection)
+	addConnection(15,2, Connection)
+	addConnection(15,16, Connection)
+	addConnection(16,19, Connection)
+	addConnection(17,1, Connection)
+	addConnection(17,15, Connection)
+	addConnection(17,18, Connection)
 	# addConnection(17,15)
-	addConnection(18,17)
-	addConnection(18,19)
-	addConnection(18,5)
-	addConnection(18,4)
-	addConnection(19,18)
-	addConnection(20,16)
-	addConnection(20,15)
-	addConnection(21,19)
-	addConnection(22,17)
-	addConnection(23,19)
-	addConnection(23,18)
-	addConnection(23,17)
-	addConnection(24,19)
+	addConnection(18,17, Connection)
+	addConnection(18,19, Connection)
+	addConnection(18,5, Connection)
+	addConnection(18,4, Connection)
+	addConnection(19,18, Connection)
+	addConnection(20,16, Connection)
+	addConnection(20,15, Connection)
+	addConnection(21,19, Connection)
+	addConnection(22,17, Connection)
+	addConnection(23,19, Connection)
+	addConnection(23,18, Connection)
+	addConnection(23,17, Connection)
+	addConnection(24,19, Connection)
 
 def draw():
 	dot = Digraph (comment = 'test2')
@@ -170,6 +170,21 @@ def draw():
 		dot.edge(s, t)
 
 	dot.render('test2.gv', view=True)
+
+def trace (state, DIFlist):
+	global Connection
+	dot = Digraph (comment = 'trace')
+	# now we expand and visit all the states 
+	Visited = [state]
+	for d in DIFlist :
+		# obtain the states that can fit the current setting 
+			# obtain all the states that can be accessed
+		CanAccess = []
+		for s in AllStates:
+			if (state.toString, s.toString) in Connection:
+				
+
+
 
 def  main():
 	buildAllStates()
