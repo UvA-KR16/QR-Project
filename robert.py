@@ -1,5 +1,6 @@
 import sys
 from graphviz import Digraph
+import copy
 
 ZERO  = 0
 POS  = 1
@@ -175,13 +176,38 @@ def trace (state, DIFlist):
 	global Connection
 	dot = Digraph (comment = 'trace')
 	# now we expand and visit all the states 
-	Visited = [state]
-	for d in DIFlist :
-		# obtain the states that can fit the current setting 
-			# obtain all the states that can be accessed
-		CanAccess = []
-		for s in AllStates:
-			if (state.toString, s.toString) in Connection:
+	# Visited = [state]
+
+	newConnection = []
+	CanAccess = {} 
+	CanAccess[state.DIF] = [state]
+	for i in range(len(DIFlist)):
+		d = DIFlist[i]
+
+		# denote a list of nodes to visit
+		toVisit = copy.copy(CanAccess[d]) 
+		while len(toVisit) != 0:
+			s = toVisit [0] #pick a state
+			for t in AllStates:
+				if (s.toString(), t.toString()) in Connection:
+					if t.DIF == d:
+						# this is the situation that we need to add to the accessible next states
+						CanAccess[d].append(t) 
+						toVisit.append(t)
+						newConnection.append(s.toString(), t.toString())
+			toVisit.remove(s) 
+		# prepare the next d
+		if (CanAccess[d] != [] and i+1 != len(DIFlist)):
+			d_next = DIFlist[i+1]
+			CanAccess[d_next] = []
+			for t in AllStates:
+				if (s.toString(), to.toString()) in Connection:
+					if t.DIF == d_next:
+						CanAccess[d_next].append(t)
+
+
+
+
 				
 
 
