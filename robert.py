@@ -1,3 +1,6 @@
+# Shuai Wang 11108339
+# Aashish Venkatesh 11392363
+
 import sys
 from graphviz import Digraph
 import copy
