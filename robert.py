@@ -209,7 +209,8 @@ def trace (state, DIFlist):
 					if t.DIF == d:
 						# this is the situation that we need to add to the accessible next states
 						print '\t it has access to', t.toString()
-						CanAccess[i].append(t) 
+						if t not in CanAccess[i]: 
+							CanAccess[i].append(t) 
 						toVisit.append(t)
 						newConn[i].append((s, t))
 			toVisit.remove(s) 
@@ -222,7 +223,8 @@ def trace (state, DIFlist):
 					if (s.toString(), t.toString()) in Connection:
 						if t.DIF == d_next:
 							print '\t INTER ', s.toString(), ' has access to', t.toString()
-							CanAccess[i+1].append(t)
+							if t not in CanAccess[i+1]: 
+								CanAccess[i+1].append(t)
 							print '\t\tafter adding, it has ', len(CanAccess[i+1]) , ' to visit'
 							newConnInterLevel[i].append((s, t))
 			print 'from prediction, there are at least', len(CanAccess[i+1]), ' nodes to visit at the next level'
@@ -309,7 +311,7 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 				if (t1 == nextVisit):
 					if m[i][t2] > m[i][t1] + 1:
 						m[i][t2] = m[i][t1] + 1
-						backtrace[t2] = t1
+						backtrace[(i,t2)] = (i, t1)
 						print t1.toString() , ' -> ', t2.toString(), 'distance: ', m[i][t2]
 			toVisit.remove(nextVisit) #???
 			# after visiting all the nodes, select a next one to visit, it must be the losest one
@@ -338,7 +340,7 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 					if (t1 == nextVisit):
 						if m[i+1][t2] > m[i][t1] + 1:
 							m[i+1][t2] = m[i][t1] + 1
-							backtrace[t2] = t1
+							backtrace[(i+1,t2)] = (i,t1)
 							print t1.toString() , ' --> ', t2.toString(), 'distance: ', m[i+1][t2]
 
 				# print len(toVisit)
@@ -352,17 +354,43 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 
 	# return the backtrace
 	lastLevelStates = states[len(DIFlist) -1]
-	dis = INF
-	for a in lastLevelStates:
-		if dis >= m[i][a]:
-			dis = m[i][a]
-			nextVisit = a
+	lastLevelIndex = len(DIFlist) -1
 
-	backlist = [nextVisit]
+
+	terminatingStates = []
+	for s in lastLevelStates:
+		if s.DIF == ZERO and s.DV == ZERO:
+			terminatingStates.append(s)
+	
+	distance = INF
+	bestTerminating = terminatingStates[0]
+	
+
+ # if there is a terminating state then I use it, otehrwise, I use the shortest path one
+	if len(terminatingStates) != 0:
+		for st in terminatingStates:
+			if m[lastLevelIndex][st] <= distance:
+				bestTerminating = st
+				distance = m[lastLevelIndex][st]
+	else: 
+		dis = INF
+		for a in lastLevelStates:
+			if dis >= m[i][a]:
+				dis = m[i][a]
+				bestTerminating = a
+
+
+	backlist = [bestTerminating]
+	print 'best = ', bestTerminating.toString()
 	# print nextVisit.toString()
-	while nextVisit != s0:
-		nextVisit = backtrace[nextVisit]
-		backlist.append(nextVisit)
+	level = len(DIFlist) - 1 
+	print backtrace
+	print level 
+	while bestTerminating != s0:
+		# print bestTerminating.toString()
+		(k, bestTerminating) = backtrace[(level, bestTerminating)]
+		backlist.append(bestTerminating)
+		level = k
 		# print nextVisit.toString()
 	backlist.append(s0)
 	path = copy.copy(backlist)
@@ -378,13 +406,16 @@ def  main():
 	buildConnections ()
 	# draw()
 	s = State(POS,NEG,POS,ZERO)
-	DIFlist = [NEG, ZERO,POS,ZERO]
-	(states, conn, connInter) = trace(s, DIFlist)
+	DIFlist = [NEG, ZERO,POS]
+	if DIFlist[-1] != ZERO:
+		DIFlist2 = copy.copy(DIFlist)
+		DIFlist2.append(ZERO)
+	(states, conn, connInter) = trace(s, DIFlist2)
 	# s = State(ZERO,POS,ZERO,ZERO)
 	# DIFlist = [POS, ZERO,NEG,ZERO]
 	# (states, conn, connInter) = trace(s, DIFlist)
 	# drawTrace(states, conn, connInter)
-	path =  shortestPath(s, states, conn, connInter, DIFlist)
+	path =  shortestPath(s, states, conn, connInter, DIFlist2)
 	print 'print path: '
 	for p in path:
 		print p.toString()
