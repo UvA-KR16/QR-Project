@@ -8,6 +8,8 @@ POS  = 1
 NEG = -1
 MAX = 2
 
+INF = 100000000
+
 Expanded = []
 ToExpand = []
 Connection = []
@@ -186,51 +188,51 @@ def trace (state, DIFlist):
 	newConnInterLevel = {}
 	rechableStates = {}
 	CanAccess = {} 
-	CanAccess[state.DIF] = [state]
-	for d in DIFlist:
-		newConn[d] = []
-		newConnInterLevel[d] = []
-		CanAccess[d] = []
+	# CanAccess[state.DIF] = [state]
+	for i in range(len(DIFlist)):
+		newConn[i] = []
+		newConnInterLevel[i] = []
+		CanAccess[i] = []
 
-	CanAccess[DIFlist[0]] = [state]
+	CanAccess[0] = [state]
 	for i in range(len(DIFlist)):
 		d = DIFlist[i]
-		print 'I am currently dealing with ', d
+		print 'I am currently dealing with ', i
 		# denote a list of nodes to visit
-		toVisit = copy.copy(CanAccess[d]) 
+		toVisit = copy.copy(CanAccess[i]) 
 		print 'there are ', len(toVisit), ' states to visit'
 		while len(toVisit) != 0: 
 			s = toVisit [0] #pick a state
-			print 'visiting ', s.status(0)
+			print 'visiting ', s.toString()
 			for t in AllStates:
 				if (s.toString(), t.toString()) in Connection:
 					if t.DIF == d:
 						# this is the situation that we need to add to the accessible next states
-						print '\t it has access to', t.status(0)
-						CanAccess[d].append(t) 
+						print '\t it has access to', t.toString()
+						CanAccess[i].append(t) 
 						toVisit.append(t)
-						newConn[d].append((s, t))
+						newConn[i].append((s, t))
 			toVisit.remove(s) 
 		# prepare the next d
-		if (CanAccess[d] != [] and i+1 != len(DIFlist)):
+		if (CanAccess[i] != [] and i+1 != len(DIFlist)):
 			d_next = DIFlist[i+1] 
-			for s in CanAccess[d]:
-				print 'prepare-visiting ', s.status(0)
+			for s in CanAccess[i]:
+				print 'INTER-visiting ', s.toString()
 				for t in AllStates:
 					if (s.toString(), t.toString()) in Connection:
 						if t.DIF == d_next:
-							print '\t prepare it has access to', t.status(0)
-							CanAccess[d_next].append(t)
-							print '\t\tafter adding, it has ', len(CanAccess[d_next]) , ' to visit'
-							newConnInterLevel[d_next].append((s, t))
-			print 'from prediction, there are at least', len(CanAccess[d_next]), ' nodes to visit'
+							print '\t INTER ', s.toString(), ' has access to', t.toString()
+							CanAccess[i+1].append(t)
+							print '\t\tafter adding, it has ', len(CanAccess[i+1]) , ' to visit'
+							newConnInterLevel[i].append((s, t))
+			print 'from prediction, there are at least', len(CanAccess[i+1]), ' nodes to visit at the next level'
 			# print '\t\t----prepare the next to visit-----'
 			# for n in CanAccess[d_next]:
 				# print '\t\t\tstates in preparation', n.status(0)
 		# print '\n', d
 
 		# for s in CanAccess[d]:
-		rechableStates[d] = copy.copy(CanAccess[d]) 
+		rechableStates[i] = copy.copy(CanAccess[i]) 
 		# visitedStates = list(set(visitedStates))
 		# newConnection = list (set (newConnection))
 
@@ -256,71 +258,96 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 	for d in DIFlist:
 		distance = {}
 		m.append(distance)
+
+	for i in range(len(DIFlist)):
+		for t in states[i]:
+			m[i][t] = INF
 	
 	m[0][s0] = 0
+	print 'start from ', s0.toString()
 	for i in range(len(DIFlist)):
-		#initialise the
 		d = DIFlist[i]
-		for t in states[d]:
-			if t not in states[d].keys()
-				m[i][t] = 1000000 #initialise it's distance to infinity
+		print '---------- ', i
+		print 'There are ', len(states[i]), ' states'
+		print 'There are ', len(conn[i]), ' inner connections'
+		print 'There are ', len(connInter[i]), ' inter connections'
+		#initialise the
+		# for t in states[d]:
+		# 	if t not in m[i].keys():
+		# 		m[i][t] = INF #initialise it's distance to infinity
 
-		toVisit = states[d]
-		nextVisit = s0 #a random state
+		toVisit = copy.copy(states[i])
+		nextVisit = toVisit[0] #a random state
+		dis = INF
+		for a in toVisit :
+			if dis >= m[i][a]:
+				dis = m[i][a]
+				nextVisit = a
 		#always visit the next closest one
-		while len(toVisit) != 0 :
-			for (t1, t2) in conn[d]: 
+		while len(toVisit) != 0:
+			for (t1, t2) in conn[i]: 
 				if (t1 == nextVisit):
 					if m[i][t2] > m[i][t1] + 1:
 						m[i][t2] = m[i][t1] + 1
 						backtrace[t2] = t1
+						print t1.toString() , ' -> ', t2.toString(), 'distance: ', m[i][t2]
 			toVisit.remove(nextVisit) #???
 			# after visiting all the nodes, select a next one to visit, it must be the losest one
-			dis = 1000000
+			# for e in toVisit:
+			# 	print e.toString()
+			dis = INF
 			for a in toVisit :
-				if dis > m[i][a]:
+				if dis >= m[i][a]:
 					dis = m[i][a]
 					nextVisit = a
+			# print 'among this, I choose ', nextVisit.toString()
 		# next , update the inter level edges if it is not the last level
 		# next visit ?
-		dis = 1000000
-		for a in states[d]:
-			if dis > m[i][a]:
+		dis = INF
+		for a in states[i]:
+			if dis >= m[i][a]:
 				dis = m[i][a]
 				nextVisit = a
 
 		if i+1 != len(DIFlist):
 			d_next = DIFlist[i+1]
-			toVisit = copy.copy(states[d_next])
+			toVisit = copy.copy(states[i])
 			while toVisit != []:
 				#update the distance to the next level
-				for (t1, t2) in connInter[d]:
+				for (t1, t2) in connInter[i]:
 					if (t1 == nextVisit):
 						if m[i+1][t2] > m[i][t1] + 1:
 							m[i+1][t2] = m[i][t1] + 1
 							backtrace[t2] = t1
+							print t1.toString() , ' --> ', t2.toString(), 'distance: ', m[i+1][t2]
+
+				# print len(toVisit)
 				toVisit.remove(nextVisit)
 				# after visiting all the nodes, select a next one to visit, it must be the closest one
-				dis = 1000000
-				for a in states[d]:
-					if dis > m[i][a]:
+				dis = INF
+				for a in toVisit:
+					if dis >= m[i][a]:
 						dis = m[i][a]
 						nextVisit = a
 
 	# return the backtrace
-	lastLevelStates = states[DIFlist[-1]]
-	dis = 1000000
+	lastLevelStates = states[len(DIFlist) -1]
+	dis = INF
 	for a in lastLevelStates:
-		if dis > m[i][a]:
+		if dis >= m[i][a]:
 			dis = m[i][a]
 			nextVisit = a
 
 	backlist = [nextVisit]
+	# print nextVisit.toString()
 	while nextVisit != s0:
-		backlist.append(backtrace[nextVisit])
 		nextVisit = backtrace[nextVisit]
+		backlist.append(nextVisit)
+		# print nextVisit.toString()
 	backlist.append(s0)
-	path = backlist.reverse()
+	path = copy.copy(backlist)
+	path.reverse()
+	# print 'is it empty? ', type(path)
 	return path
 
 
@@ -338,8 +365,11 @@ def  main():
 	s = State(ZERO,POS,ZERO,ZERO)
 	DIFlist = [POS, ZERO,NEG,ZERO]
 	(states, conn, connInter) = trace(s, DIFlist)
-	drawTrace(states, conn, connInter)
-	# shortestPath(s, states, conn, connInter, DIFlist)
+	# drawTrace(states, conn, connInter)
+	path =  shortestPath(s, states, conn, connInter, DIFlist)
+	print 'print path: '
+	for p in path:
+		print p.toString()
 
 
 
