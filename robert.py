@@ -141,6 +141,7 @@ def buildConnections ():
 	addConnection(13,4, Connection)
 	addConnection(13,3, Connection)
 	addConnection(14,7, Connection)
+	addConnection(14,4, Connection)
 	addConnection(15,1, Connection)
 	addConnection(15,2, Connection)
 	addConnection(15,16, Connection)
@@ -180,10 +181,17 @@ def trace (state, DIFlist):
 	# now we expand and visit all the states 
 	# Visited = [state]
 
-	newConnection = []
-	visitedStates = []
+	newConn = {}
+	newConnInterLevel = {}
+	rechableStates = {}
 	CanAccess = {} 
 	CanAccess[state.DIF] = [state]
+	for d in DIFlist:
+		newConn[d] = []
+		newConnInterLevel[d] = []
+		CanAccess[d] = []
+
+	CanAccess[DIFlist[0]] = [state]
 	for i in range(len(DIFlist)):
 		d = DIFlist[i]
 		print 'I am currently dealing with ', d
@@ -200,12 +208,11 @@ def trace (state, DIFlist):
 						print '\t it has access to', t.status(0)
 						CanAccess[d].append(t) 
 						toVisit.append(t)
-						newConnection.append((s.toString(), t.toString()))
+						newConn[d].append((s.toString(), t.toString()))
 			toVisit.remove(s) 
 		# prepare the next d
 		if (CanAccess[d] != [] and i+1 != len(DIFlist)):
-			d_next = DIFlist[i+1]
-			CanAccess[d_next] = []
+			d_next = DIFlist[i+1] 
 			for s in CanAccess[d]:
 				print 'prepare-visiting ', s.status(0)
 				for t in AllStates:
@@ -214,31 +221,31 @@ def trace (state, DIFlist):
 							print '\t prepare it has access to', t.status(0)
 							CanAccess[d_next].append(t)
 							print '\t\tafter adding, it has ', len(CanAccess[d_next]) , ' to visit'
-							newConnection.append((s.toString(), t.toString()))
+							newConnInterLevel[d_next].append((s.toString(), t.toString()))
 			print 'from prediction, there are at least', len(CanAccess[d_next]), ' nodes to visit'
 			# print '\t\t----prepare the next to visit-----'
 			# for n in CanAccess[d_next]:
 				# print '\t\t\tstates in preparation', n.status(0)
 		# print '\n', d
 
-		for s in CanAccess[d]:
-			visitedStates.append(s)
+		# for s in CanAccess[d]:
+		rechableStates[d] = copy.copy(CanAccess[d]) 
+		# visitedStates = list(set(visitedStates))
+		# newConnection = list (set (newConnection))
 
-		visitedStates = list(set(visitedStates))
-		newConnection = list (set (newConnection))
+	return (rechableStates, newConn, newConnInterLevel)
 
-	return (visitedStates, newConnection)
-
-def drawTrace (states, conn):
+def drawTrace (states, conn, connInter):
 	dot = Digraph (comment = 'trace')
-	for s in states:
+	for s in sum(states.values(), []):
 		dot.node(s.toString(), s.status(0))
-	for (s, t) in conn:
+
+	l = sum(conn.values(), [])
+	k = sum(connInter.values(), [])
+	for (s, t) in  list(set(l + k)):
 		dot.edge(s, t)
 
-	dot.render('trace.gv', view=True)
-
-
+	dot.render('trace.gv', view=True) 
 
 				
 
@@ -251,8 +258,10 @@ def  main():
 	# s = State(POS,NEG,POS,ZERO)
 	# (visitedStates, conn) = trace(s, [NEG, ZERO,POS,ZERO])
 	s = State(ZERO,POS,ZERO,ZERO)
-	(visitedStates, conn) = trace(s, [POS, ZERO,NEG,ZERO])
-	drawTrace(visitedStates, conn)
+	(visitedStates, conn, connInter) = trace(s, [POS, ZERO,NEG,ZERO])
+	print conn
+	print connInter
+	drawTrace(visitedStates, conn, connInter)
 
 
 
