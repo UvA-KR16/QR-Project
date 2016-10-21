@@ -5,6 +5,7 @@ import sys
 from graphviz import Digraph
 import copy
 import numpy
+from  calculus import expand_states
 
 ZERO  = 0
 POS  = 1
@@ -13,28 +14,10 @@ MAX = 2
 
 
 INF = 100000000
-
-Expanded = []
-ToExpand = []
 Connection = []
-
 AllStates = []
-ValidStates = []
-StableStates = []
-UnstableStates =[]
-
 index = {}
-
-def toStr (num):
-	if num == ZERO:
-		return 'ZERO'
-	elif num == POS:
-		return 'POS'
-	elif num == NEG:
-		return 'NEG'
-	elif num == MAX:
-		return 'MAX'
-	else: return 'ERROR'
+from tmp import *
 
 class State ():
 	def __init__(self, IF, DIF, V, DV):
@@ -47,8 +30,7 @@ class State ():
 		return str(d)
 
 	def status(self,id):
-		# s = str(index) + ' '
-		# s="IF,DIF V,DV H,DH P,DP OF,DOF"+"\n"
+
 		global index
 		s= 'ID='+ str(index[self.toString()]) +'  '+'IF('
 
@@ -57,8 +39,6 @@ class State ():
 		else:
 			s += '+,' 
 
-		# s += ' dIF = '
-		# self.string += ' DIF: '
 		if self.DIF == ZERO:
 			s += '0)'
 		elif self.DIF == POS:
@@ -68,7 +48,6 @@ class State ():
 
 		s += r"\n"
 
-		# self.string += 'V: '
 		s += 'V('
 		if self.V == ZERO:
 			s += '0,'
@@ -77,9 +56,6 @@ class State ():
 		else:
 			s += 'M,' 
 
-		# s += '\n'	
-		# s += 'dV/dH/dPr/dOF =  '
-		# self.string += ' DV: '
 		if self.DV == ZERO:
 			s += '0)'
 		elif self.DV == POS:
@@ -97,7 +73,6 @@ class State ():
 		else:
 			s += 'M,' 
 
-		# self.string += ' DV: '
 		if self.DV == ZERO:
 			s += '0)'
 		elif self.DV == POS:
@@ -115,7 +90,6 @@ class State ():
 		else:
 			s += 'M,' 
 
-		# self.string += ' DV: '
 		if self.DV == ZERO:
 			s += '0)'
 		elif self.DV == POS:
@@ -125,7 +99,6 @@ class State ():
 
 		s += ' OF('
 
-		# s += 'V: '
 		if self.V == ZERO:
 			s += '0,'
 		elif self.V == POS:
@@ -133,7 +106,6 @@ class State ():
 		else:
 			s += 'M,' 
 
-		# self.string += ' DV: '
 		if self.DV == ZERO:
 			s += '0)'
 		elif self.DV == POS:
@@ -141,10 +113,28 @@ class State ():
 		else:
 			s += '-)'
 
-		# s += '\n'
 		return s
 
 
+def addConnection(i, j, Connection):
+	global AllStates
+	Connection.append((AllStates[i-1].toString(), AllStates[j-1].toString()))
+
+
+# simple function to covert a constant to string for printing
+def toStr (num):
+	if num == ZERO:
+		return 'ZERO'
+	elif num == POS:
+		return 'POS'
+	elif num == NEG:
+		return 'NEG'
+	elif num == MAX:
+		return 'MAX'
+	else: return 'ERROR'
+
+
+# validity testing
 def isValid(s):
 	if s.IF == ZERO and s.DIF == NEG:
 		return False
@@ -152,96 +142,8 @@ def isValid(s):
 		return False
 	return True
 
-def buildAllStates ():
-	global AllStates
-	AllStates.append(State(ZERO, ZERO, ZERO, ZERO))
-	AllStates.append(State(ZERO, POS, ZERO, ZERO))
-	AllStates.append(State(POS, NEG, POS, ZERO))
-	AllStates.append(State(POS, ZERO, POS, ZERO))
-	AllStates.append(State(POS, POS, POS, ZERO)) # 5
-	AllStates.append(State(POS, NEG, MAX, ZERO))
-	AllStates.append(State(POS, ZERO, MAX, ZERO))
-	AllStates.append(State(POS, POS, MAX, ZERO)) # 8
-	AllStates.append(State(POS, NEG, ZERO, POS))
-	AllStates.append(State(POS, ZERO, ZERO, POS))
-	AllStates.append(State(POS, POS, ZERO, POS))#11
-	AllStates.append(State(POS, NEG, POS, POS))
-	AllStates.append(State(POS, ZERO, POS, POS))
-	AllStates.append(State(POS, POS, POS, POS))
-	AllStates.append(State(ZERO, ZERO, POS, NEG))
-	AllStates.append(State(ZERO, POS, POS, NEG))
-	AllStates.append(State(POS, NEG, POS, NEG)) # 17
-	AllStates.append(State(POS, ZERO, POS , NEG))
-	AllStates.append(State(POS, POS, POS , NEG))
-	AllStates.append(State(ZERO, ZERO, MAX , NEG))#20
-	AllStates.append(State(ZERO, POS, MAX, NEG))
-	AllStates.append(State(POS, NEG, MAX, NEG))
-	AllStates.append(State(POS, ZERO, MAX, NEG))# 23
-	AllStates.append(State(POS, POS, MAX, NEG))
-	for i in range(len(AllStates)):
-		index[AllStates[i].toString()] = i+1
-def addConnection(i, j, Connection):
-	global AllStates
-	Connection.append((AllStates[i-1].toString(), AllStates[j-1].toString()))
 
-def buildConnections ():
-	global Connection
-	addConnection(1,2, Connection)
-	addConnection(2,11, Connection)
-	addConnection(3,17, Connection)
-	addConnection(4,5, Connection)
-	addConnection(4,3, Connection)
-	addConnection(5,14, Connection)
-	addConnection(6,22, Connection)
-	addConnection(7,6, Connection)
-	addConnection(7,8, Connection)
-	addConnection(9,12, Connection)
-	addConnection(10,13, Connection)
-	addConnection(10,12, Connection)
-	addConnection(10,14, Connection)
-	addConnection(11,14, Connection)
-	addConnection(12,13, Connection)
-	addConnection(12,4, Connection)
-	addConnection(13,3, Connection)
-	addConnection(13,6, Connection)
-	addConnection(13,7, Connection)
-	addConnection(13,14, Connection)
-	addConnection(13,4, Connection)
-	addConnection(14,4, Connection)
-	addConnection(14,7, Connection)
-	addConnection(15,1, Connection)
-	addConnection(15,2, Connection)
-	addConnection(15,16, Connection)
-	addConnection(16,19, Connection)
-	addConnection(17,1, Connection)
-	addConnection(17,15, Connection)
-	addConnection(17,4, Connection)
-	addConnection(17,18, Connection)
-	addConnection(18,17, Connection)
-	addConnection(18,19, Connection)
-	addConnection(18,5, Connection)
-	addConnection(18,4, Connection)
-	addConnection(19,18, Connection)
-	addConnection(19,5, Connection)
-	addConnection(20,16, Connection)
-	addConnection(20,15, Connection)
-	addConnection(21,19, Connection)
-	addConnection(22,17, Connection)
-	addConnection(23,19, Connection)
-	addConnection(23,18, Connection)
-	addConnection(23,17, Connection)
-	addConnection(24,19, Connection)
-
-def draw():
-	dot = Digraph (comment = 'test2')
-	for i in range(len(AllStates)):
-		s = AllStates[i]
-		dot.node(s.toString(), s.status(i+1))
-	for (s, t) in Connection:
-		dot.edge(s, t)
-
-	dot.render('test2.gv', view=True)
-
+# generate the tracing
 def trace (state, DIFList):
 	global Connection
 	dot = Digraph (comment = 'trace')
@@ -267,12 +169,14 @@ def trace (state, DIFList):
 		# print 'there are ', len(toVisit), ' states to visit'
 		while len(toVisit) != 0: 
 			s = toVisit [0] #pick a state
-			# print 'visiting ', s.toString()
+
+			# obtain the reachable states of s
+			reachable_states = expand_states(s)
+
 			for t in AllStates:
 				if (s.toString(), t.toString()) in Connection:
 					if t.DIF == d:
 						# this is the situation that we need to add to the accessible next states
-						# print '\t it has access to', t.toString()
 						if t not in CanAccess[i]: 
 							CanAccess[i].append(t) 
 						toVisit.append(t)
@@ -282,30 +186,23 @@ def trace (state, DIFList):
 		if (CanAccess[i] != [] and i+1 != len(DIFList)):
 			d_next = DIFList[i+1] 
 			for s in CanAccess[i]:
-				# print 'INTER-visiting ', s.toString()
+				
+				# obtain the reachable states of s
+				reachable_states = expand_states(s)
+
 				for t in AllStates:
 					if (s.toString(), t.toString()) in Connection:
 						if t.DIF == d_next:
-							# print '\t INTER ', s.toString(), ' has access to', t.toString()
 							if t not in CanAccess[i+1]: 
 								CanAccess[i+1].append(t)
-							# print '\t\tafter adding, it has ', len(CanAccess[i+1]) , ' to visit'
 							newConnInterLevel[i].append((s, t))
-			# print 'from prediction, there are at least', len(CanAccess[i+1]), ' nodes to visit at the next level'
-			# print '\t\t----prepare the next to visit-----'
-			# for n in CanAccess[d_next]:
-				# print '\t\t\tstates in preparation', n.status(0)
-		# print '\n', d
-
-		# for s in CanAccess[d]:
+		
 		rechableStates[i] = copy.copy(CanAccess[i]) 
-		# visitedStates = list(set(visitedStates))
-		# newConnection = list (set (newConnection))
 
 	return (rechableStates, newConn, newConnInterLevel)
 
+# this function is only used for our report
 def drawTrace (states, conn, connInter):
-	# dot = Digraph (comment = 'trace')
 	dot = Digraph(name='pet-shop', node_attr={'shape': 'note','labeljust': 'r'})
 	index = 1
 	for s in sum(states.values(), []):
@@ -320,8 +217,8 @@ def drawTrace (states, conn, connInter):
 	dot.render('trace.gv', view=True) 
 
 
+# a simple drawing file
 def drawShortestPath(states, conn, connInter, path):
-	# dot = Digraph (comment = 'trace')
 	dot = Digraph(name='pet-shop', node_attr={'shape': 'note','labeljust': 'r'})
 	index = 1
 	for s in sum(states.values(), []):
@@ -359,17 +256,12 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 			m[i][t] = INF
 	
 	m[0][s0] = 0
-	# print 'start from ', s0.toString()
 	for i in range(len(DIFList)):
 		d = DIFList[i]
 		# print 'This is level ', i
 		# print '\tThere are ', len(states[i]), ' states'
 		# print '\tThere are ', len(conn[i]), ' inner connections'
 		# print '\tThere are ', len(connInter[i]), ' inter connections'
-		#initialise the
-		# for t in states[d]:
-		# 	if t not in m[i].keys():
-		# 		m[i][t] = INF #initialise it's distance to infinity
 
 		toVisit = copy.copy(states[i])
 		nextVisit = toVisit[0] #a random state
@@ -388,16 +280,12 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 						# print '\t\tINNER: update the distance from',  t1.toString() , ' to ', t2.toString(), 'as ', m[i][t2]
 			toVisit.remove(nextVisit) #???
 			# after visiting all the nodes, select a next one to visit, it must be the losest one
-			# for e in toVisit:
-			# 	print e.toString()
 			dis = INF
 			for a in toVisit :
 				if dis >= m[i][a]:
 					dis = m[i][a]
 					nextVisit = a
-			# print 'among this, I choose ', nextVisit.toString()
 		# next , update the inter level edges if it is not the last level
-		# next visit ?
 		dis = INF
 		for a in states[i]:
 			if dis >= m[i][a]:
@@ -460,11 +348,7 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 
 
 	backlist = [bestTerminating] # start from the best terminating state
-	# print 'best = ', bestTerminating.toString()
-	# print nextVisit.toString()
 	level = len(DIFList) - 1 
-	# print backtrace
-	# print level
 	while bestTerminating != s0:
 		(k, b) = backtrace[(level, bestTerminating)]
 		# print '\t This is level' , level, ' from the state ', bestTerminating.toString(), ', we trace back and get',  b.toString(), 'at level ', k 
@@ -475,7 +359,7 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 	backlist.append(s0)
 	path = copy.copy(backlist)
 	path.reverse()
-
+	# print out the tracing log
 	for i in range(len(path) -1):
 		print 'At step ', i+1
 		if path[i].DIF != path[i+1].DIF :
@@ -503,8 +387,6 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 			print '\tThe previous state IF(', toStr(path[i].IF) ,', ', toStr(path[i].DIF), ')\n\t\t\t V(', toStr(path[i].V), ', ',toStr(path[i].DV), ') H(', toStr(path[i].V), ', ',toStr(path[i].DV), ') \n\t\t\tPr(', toStr(path[i].V), ', ',toStr(path[i].DV), ') OF(', toStr(path[i].V), ', ',toStr(path[i].DV) ,')'
 			print '\tThe consequent state IF(', toStr(path[i+1].IF) ,', ', toStr(path[i+1].DIF), ')\n\t\t\t V(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') H(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') \n\t\t\tPr(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') OF(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV) ,')' 
 			
-
-	# print 'is it empty? ', type(path)
 	return path
 
 
@@ -513,7 +395,6 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 def  main():
 	buildAllStates()
 	buildConnections ()
-	# draw()
 	s = State(ZERO,POS,ZERO,ZERO)
 	# ask for a state
 	invalid = True
@@ -525,10 +406,8 @@ def  main():
 		x = raw_input ('Input your state in the format V|IF. (notation: M = Max, 0 = Zero, + = Pos, - Neg)\n For example +|0\n')
 		v = x[0]
 		i = x[2] 
-		# di  = x[4]
-
-		# print v, i , di
 		invalid = False
+		# restrictions on input
 		if v == '+':
 			V = POS
 		elif v == '-':
@@ -551,21 +430,10 @@ def  main():
 		else:
 			invalid = True
 
-		# if di == '+':
-		# 	DIF = POS
-		# elif di == '-':
-		# 	DIF = NEG
-		# elif di == 'M':
-		# 	invalid = True
-		# elif di == '0':
-		# 	DIF = ZERO
-		# else:
-		# 	invalid = True
-
 		if invalid:
 			print 'Your input is invalid, please input again'
-	# print 'creating a state: ', V, ' ', IF, ' ', DIF
 
+	#some hardcoded values to save time for users
 	DIFList = []
 	DIFSteady = [ZERO]
 	DIFIncreasing = [POS, ZERO]
@@ -608,32 +476,20 @@ def  main():
 
 	s = State(IF, DIF, V, DV)
 
-
-	# # ask for input of DIF:
-
-	# DIFList = [POS,ZERO,NEG,ZERO,POS,ZERO,NEG]
 	DIFList2 = []
 	DIFList2 = copy.copy(DIFList) # towards a static terminating state
 
-	# print 'DIF list: ', DIFList 
 	if DIFList[-1] != ZERO:
 		DIFList2.append(ZERO)
 	(states, conn, connInter) = trace(s, DIFList2)
-
-
-	# s = State(ZERO,POS,ZERO,ZERO)
-	# # DIFList = [POS, ZERO,NEG,ZERO]
-	(states, conn, connInter) = trace(s, DIFList2)
-	# drawTrace(states, conn, connInter)
 	path =  shortestPath(s, states, conn, connInter, DIFList2)
+	# uncomment this to print the path
 	# print '\nIn summary, the shortest path found is therefore as follows: '
 	# for p in path:
 		# print p.toString(), 
 	drawShortestPath(states, conn, connInter, path)
 	print '\n You will find a graphical representation of this path in your local folder as shortest.gv '
 	print 'If you have a viewer of PDF, you may open the file shortest.gv.pdf to view the shortest path'
-
-
 
 
 if __name__ == "__main__":
