@@ -1,8 +1,11 @@
+[airobert-KR_QRP]$ python reasoning.py           
 Input your state in the format V|IF. (notation: M = Max, 0 = Zero, + = Pos, - Neg)
  For example +|0
++|+
 Input the exogenous quantity behaviour as one of the following (must be consistent with your state)
 Steady, Increasing, Decreasing, ParabolaPos, ParabolaNeg, Sinusoidal :
 For Example: ParabolaPos
+ParabolaNeg
 Input complete. Start the reasoning!
 
 
