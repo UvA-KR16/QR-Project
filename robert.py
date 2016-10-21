@@ -231,7 +231,7 @@ def draw():
 
 	dot.render('test2.gv', view=True)
 
-def trace (state, DIFlist):
+def trace (state, DIFList):
 	global Connection
 	dot = Digraph (comment = 'trace')
 	# now we expand and visit all the states 
@@ -242,14 +242,14 @@ def trace (state, DIFlist):
 	rechableStates = {}
 	CanAccess = {} 
 	# CanAccess[state.DIF] = [state]
-	for i in range(len(DIFlist)):
+	for i in range(len(DIFList)):
 		newConn[i] = []
 		newConnInterLevel[i] = []
 		CanAccess[i] = []
 
 	CanAccess[0] = [state]
-	for i in range(len(DIFlist)):
-		d = DIFlist[i]
+	for i in range(len(DIFList)):
+		d = DIFList[i]
 		print 'I am currently dealing with ', i
 		# denote a list of nodes to visit
 		toVisit = copy.copy(CanAccess[i]) 
@@ -268,8 +268,8 @@ def trace (state, DIFlist):
 						newConn[i].append((s, t))
 			toVisit.remove(s) 
 		# prepare the next d
-		if (CanAccess[i] != [] and i+1 != len(DIFlist)):
-			d_next = DIFlist[i+1] 
+		if (CanAccess[i] != [] and i+1 != len(DIFList)):
+			d_next = DIFList[i+1] 
 			for s in CanAccess[i]:
 				print 'INTER-visiting ', s.toString()
 				for t in AllStates:
@@ -333,21 +333,21 @@ def drawShortestPath(states, conn, connInter, path):
 
 				
 
-def shortestPath (s0, states, conn, connInter, DIFlist):
+def shortestPath (s0, states, conn, connInter, DIFList):
 	backtrace = {} 
 	m = []
-	for d in DIFlist:
+	for d in DIFList:
 		distance = {}
 		m.append(distance)
 
-	for i in range(len(DIFlist)):
+	for i in range(len(DIFList)):
 		for t in states[i]:
 			m[i][t] = INF
 	
 	m[0][s0] = 0
 	print 'start from ', s0.toString()
-	for i in range(len(DIFlist)):
-		d = DIFlist[i]
+	for i in range(len(DIFList)):
+		d = DIFList[i]
 		print '---------- ', i
 		print 'There are ', len(states[i]), ' states'
 		print 'There are ', len(conn[i]), ' inner connections'
@@ -390,8 +390,8 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 				dis = m[i][a]
 				nextVisit = a
 
-		if i+1 != len(DIFlist):
-			d_next = DIFlist[i+1]
+		if i+1 != len(DIFList):
+			d_next = DIFList[i+1]
 			toVisit = copy.copy(states[i])
 			while toVisit != []:
 				#update the distance to the next level
@@ -412,8 +412,8 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 						nextVisit = a
 
 	# return the backtrace
-	lastLevelStates = states[len(DIFlist) -1]
-	lastLevelIndex = len(DIFlist) -1
+	lastLevelStates = states[len(DIFList) -1]
+	lastLevelIndex = len(DIFList) -1
 
 
 	terminatingStates = []
@@ -442,7 +442,7 @@ def shortestPath (s0, states, conn, connInter, DIFlist):
 	backlist = [bestTerminating]
 	print 'best = ', bestTerminating.toString()
 	# print nextVisit.toString()
-	level = len(DIFlist) - 1 
+	level = len(DIFList) - 1 
 	print backtrace
 	print level 
 	while bestTerminating != s0:
@@ -541,15 +541,15 @@ def  main():
 		if (x == 'Steady' and DIF == ZERO):
 			DIFList = DIFSteady
 		elif x == 'Increasing' and DIF == POS:
-			DIFlist = DIFIncreasing
+			DIFList = DIFIncreasing
 		elif x == 'Decreasing' and DIF == NEG:
-			DIFlist = DIFDecreasing
+			DIFList = DIFDecreasing
 		elif x == 'ParabolaPos' and DIF == POS:
-			DIFlist = DIFParabolaPos
+			DIFList = DIFParabolaPos
 		elif x == 'ParabolaNeg' and DIF == NEG:
-			DIFlist = DIFParabolaNeg
+			DIFList = DIFParabolaNeg
 		elif x == 'Sinusoidal' and DIF == POS:
-			DIFlist = DIFSinusoidal
+			DIFList = DIFSinusoidal
 		else: 
 			valid = False
 			print 'input is invalid or in contradictino with the initial state'
@@ -559,24 +559,25 @@ def  main():
 
 	# # ask for input of DIF:
 
-	# DIFlist = [POS,ZERO,NEG,ZERO,POS,ZERO,NEG]
+	# DIFList = [POS,ZERO,NEG,ZERO,POS,ZERO,NEG]
 	DIFList2 = []
 	DIFList2 = copy.copy(DIFList) # towards a static terminating state
 
+	print 'DIF list: ', DIFList 
 	if DIFList[-1] != ZERO:
 		DIFList2.append(ZERO)
 	(states, conn, connInter) = trace(s, DIFList2)
 
 
-	# # s = State(ZERO,POS,ZERO,ZERO)
-	# # DIFlist = [POS, ZERO,NEG,ZERO]
-	# # (states, conn, connInter) = trace(s, DIFlist)
-	# # drawTrace(states, conn, connInter)
-	# path =  shortestPath(s, states, conn, connInter, DIFlist2)
-	# print 'print path: '
-	# for p in path:
-	# 	print p.toString()
-	# drawShortestPath(states, conn, connInter, path)
+	# s = State(ZERO,POS,ZERO,ZERO)
+	# # DIFList = [POS, ZERO,NEG,ZERO]
+	(states, conn, connInter) = trace(s, DIFList)
+	# drawTrace(states, conn, connInter)
+	path =  shortestPath(s, states, conn, connInter, DIFList2)
+	print 'print path: '
+	for p in path:
+		print p.toString()
+	drawShortestPath(states, conn, connInter, path)
 
 
 
