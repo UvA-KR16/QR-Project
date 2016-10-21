@@ -250,18 +250,18 @@ def trace (state, DIFList):
 	CanAccess[0] = [state]
 	for i in range(len(DIFList)):
 		d = DIFList[i]
-		print 'I am currently dealing with ', i
+		# print 'I am currently dealing with ', i
 		# denote a list of nodes to visit
 		toVisit = copy.copy(CanAccess[i]) 
-		print 'there are ', len(toVisit), ' states to visit'
+		# print 'there are ', len(toVisit), ' states to visit'
 		while len(toVisit) != 0: 
 			s = toVisit [0] #pick a state
-			print 'visiting ', s.toString()
+			# print 'visiting ', s.toString()
 			for t in AllStates:
 				if (s.toString(), t.toString()) in Connection:
 					if t.DIF == d:
 						# this is the situation that we need to add to the accessible next states
-						print '\t it has access to', t.toString()
+						# print '\t it has access to', t.toString()
 						if t not in CanAccess[i]: 
 							CanAccess[i].append(t) 
 						toVisit.append(t)
@@ -271,16 +271,16 @@ def trace (state, DIFList):
 		if (CanAccess[i] != [] and i+1 != len(DIFList)):
 			d_next = DIFList[i+1] 
 			for s in CanAccess[i]:
-				print 'INTER-visiting ', s.toString()
+				# print 'INTER-visiting ', s.toString()
 				for t in AllStates:
 					if (s.toString(), t.toString()) in Connection:
 						if t.DIF == d_next:
-							print '\t INTER ', s.toString(), ' has access to', t.toString()
+							# print '\t INTER ', s.toString(), ' has access to', t.toString()
 							if t not in CanAccess[i+1]: 
 								CanAccess[i+1].append(t)
-							print '\t\tafter adding, it has ', len(CanAccess[i+1]) , ' to visit'
+							# print '\t\tafter adding, it has ', len(CanAccess[i+1]) , ' to visit'
 							newConnInterLevel[i].append((s, t))
-			print 'from prediction, there are at least', len(CanAccess[i+1]), ' nodes to visit at the next level'
+			# print 'from prediction, there are at least', len(CanAccess[i+1]), ' nodes to visit at the next level'
 			# print '\t\t----prepare the next to visit-----'
 			# for n in CanAccess[d_next]:
 				# print '\t\t\tstates in preparation', n.status(0)
@@ -345,13 +345,13 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 			m[i][t] = INF
 	
 	m[0][s0] = 0
-	print 'start from ', s0.toString()
+	# print 'start from ', s0.toString()
 	for i in range(len(DIFList)):
 		d = DIFList[i]
-		print '---------- ', i
-		print 'There are ', len(states[i]), ' states'
-		print 'There are ', len(conn[i]), ' inner connections'
-		print 'There are ', len(connInter[i]), ' inter connections'
+		# print '---------- ', i
+		# print 'There are ', len(states[i]), ' states'
+		# print 'There are ', len(conn[i]), ' inner connections'
+		# print 'There are ', len(connInter[i]), ' inter connections'
 		#initialise the
 		# for t in states[d]:
 		# 	if t not in m[i].keys():
@@ -440,11 +440,11 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 
 
 	backlist = [bestTerminating]
-	print 'best = ', bestTerminating.toString()
+	# print 'best = ', bestTerminating.toString()
 	# print nextVisit.toString()
 	level = len(DIFList) - 1 
-	print backtrace
-	print level 
+	# print backtrace
+	# print level 
 	while bestTerminating != s0:
 		# print bestTerminating.toString()
 		(k, bestTerminating) = backtrace[(level, bestTerminating)]
@@ -472,7 +472,7 @@ def  main():
 	DIF = INF
 	DV = INF
 	while (invalid): 
-		x = raw_input ('input your state in the format V|IF|DIF. For example +|0|0\n')
+		x = raw_input ('input your state in the format V|IF|DIF. For example +|0|+\n')
 		v = x[0]
 		i = x[2] 
 		di  = x[4]
@@ -571,12 +571,12 @@ def  main():
 
 	# s = State(ZERO,POS,ZERO,ZERO)
 	# # DIFList = [POS, ZERO,NEG,ZERO]
-	(states, conn, connInter) = trace(s, DIFList)
+	(states, conn, connInter) = trace(s, DIFList2)
 	# drawTrace(states, conn, connInter)
 	path =  shortestPath(s, states, conn, connInter, DIFList2)
-	print 'print path: '
+	print 'the shortest path is as follows: '
 	for p in path:
-		print p.toString()
+		print p.toString(), 
 	drawShortestPath(states, conn, connInter, path)
 
 
