@@ -33,7 +33,9 @@ class State ():
 		return str(d)
 
 	def status(self, index):
-		s = str(index) + ' '
+		# s = str(index) + ' '
+		# s="IF,DIF V,DV H,DH P,DP OF,DOF"+"\n"
+		s=''
 
 		if self.IF == ZERO:
 			s += '0'
@@ -69,6 +71,40 @@ class State ():
 		s += ' '
 
 		# s += 'V: '
+		if self.V == ZERO:
+			s += '0'
+		elif self.V == POS:
+			s += '+' 
+		else:
+			s += 'M' 
+
+		# self.string += ' DV: '
+		if self.DV == ZERO:
+			s += '0'
+		elif self.DV == POS:
+			s += '+' 
+		else:
+			s += '-'
+
+		s += ' '
+
+		if self.V == ZERO:
+			s += '0'
+		elif self.V == POS:
+			s += '+' 
+		else:
+			s += 'M' 
+
+		# self.string += ' DV: '
+		if self.DV == ZERO:
+			s += '0'
+		elif self.DV == POS:
+			s += '+' 
+		else:
+			s += '-'
+
+		s += ' '
+		
 		if self.V == ZERO:
 			s += '0'
 		elif self.V == POS:
@@ -131,23 +167,25 @@ def buildConnections ():
 	addConnection(2,11, Connection)
 	addConnection(3,17, Connection)
 	addConnection(4,5, Connection)
+	addConnection(4,3, Connection)
 	addConnection(5,14, Connection)
 	addConnection(6,22, Connection)
 	addConnection(7,6, Connection)
 	addConnection(7,8, Connection)
 	addConnection(9,12, Connection)
 	addConnection(10,13, Connection)
+	addConnection(10,12, Connection)
+	addConnection(10,14, Connection)
 	addConnection(11,14, Connection)
 	addConnection(12,13, Connection)
+	addConnection(12,4, Connection)
 	addConnection(13,3, Connection)
-	addConnection(13,7, Connection)
 	addConnection(13,6, Connection)
 	addConnection(13,7, Connection)
 	addConnection(13,14, Connection)
 	addConnection(13,4, Connection)
-	addConnection(13,3, Connection)
-	addConnection(14,7, Connection)
 	addConnection(14,4, Connection)
+	addConnection(14,7, Connection)
 	addConnection(15,1, Connection)
 	addConnection(15,2, Connection)
 	addConnection(15,16, Connection)
@@ -155,7 +193,7 @@ def buildConnections ():
 	addConnection(17,1, Connection)
 	addConnection(17,15, Connection)
 	addConnection(17,4, Connection)
-	# addConnection(17,15)
+	addConnection(17,18, Connection)
 	addConnection(18,17, Connection)
 	addConnection(18,19, Connection)
 	addConnection(18,5, Connection)
@@ -244,7 +282,8 @@ def trace (state, DIFlist):
 	return (rechableStates, newConn, newConnInterLevel)
 
 def drawTrace (states, conn, connInter):
-	dot = Digraph (comment = 'trace')
+	# dot = Digraph (comment = 'trace')
+	dot = Digraph(name='pet-shop', node_attr={'shape': 'note'})
 	for s in sum(states.values(), []):
 		dot.node(s.toString(), s.status(0))
 
@@ -257,7 +296,8 @@ def drawTrace (states, conn, connInter):
 
 
 def drawShortestPath(states, conn, connInter, path):
-	dot = Digraph (comment = 'trace')
+	# dot = Digraph (comment = 'trace')
+	dot = Digraph(name='pet-shop', node_attr={'shape': 'note'})
 	for s in sum(states.values(), []):
 		dot.node(s.toString(), s.status(0))
 
@@ -408,8 +448,8 @@ def  main():
 	buildAllStates()
 	buildConnections ()
 	# draw()
-	s = State(POS,NEG,POS,ZERO)
-	DIFlist = [NEG, ZERO,POS]
+	s = State(ZERO,POS,ZERO,ZERO)
+	DIFlist = [POS,ZERO,NEG] #[NEG, ZERO,POS]
 	if DIFlist[-1] != ZERO:
 		DIFlist2 = copy.copy(DIFlist)
 		DIFlist2.append(ZERO)
