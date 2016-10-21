@@ -11,6 +11,7 @@ POS  = 1
 NEG = -1
 MAX = 2
 
+
 INF = 100000000
 
 Expanded = []
@@ -22,6 +23,8 @@ ValidStates = []
 StableStates = []
 UnstableStates =[]
 
+index = {}
+
 class State ():
 	def __init__(self, IF, DIF, V, DV):
 		self.IF = IF
@@ -32,93 +35,100 @@ class State ():
 		d = (self.IF + 1) * 1000 + (self.DIF + 1) * 100 + (self.V + 1) * 10 + (self.DV +1)
 		return str(d)
 
-	def status(self, index):
+	def status(self,id):
 		# s = str(index) + ' '
 		# s="IF,DIF V,DV H,DH P,DP OF,DOF"+"\n"
-		s=''
+		global index
+		s= 'ID='+ str(index[self.toString()]) +'  '+'IF('
 
 		if self.IF == ZERO:
-			s += '0'
+			s += '0,'
 		else:
-			s += '+' 
+			s += '+,' 
 
+		# s += ' dIF = '
 		# self.string += ' DIF: '
 		if self.DIF == ZERO:
-			s += '0'
+			s += '0)'
 		elif self.DIF == POS:
-			s += '+' 
+			s += '+)' 
 		else:
-			s += '-'
+			s += '-)'
 
-		s += ' '
+		s += '\n'
 
 		# self.string += 'V: '
+		s += 'V('
 		if self.V == ZERO:
-			s += '0'
+			s += '0,'
 		elif self.V == POS:
-			s += '+' 
+			s += '+,' 
 		else:
-			s += 'M' 
+			s += 'M,' 
 
+		# s += '\n'	
+		# s += 'dV/dH/dPr/dOF =  '
 		# self.string += ' DV: '
 		if self.DV == ZERO:
-			s += '0'
+			s += '0)'
 		elif self.DV == POS:
-			s += '+' 
+			s += '+)' 
 		else:
-			s += '-'
+			s += '-)'
 
-		s += ' '
+		s += ' H('
 
 		# s += 'V: '
 		if self.V == ZERO:
-			s += '0'
+			s += '0,'
 		elif self.V == POS:
-			s += '+' 
+			s += '+,' 
 		else:
-			s += 'M' 
+			s += 'M,' 
 
 		# self.string += ' DV: '
 		if self.DV == ZERO:
-			s += '0'
+			s += '0)'
 		elif self.DV == POS:
-			s += '+' 
+			s += '+)' 
 		else:
-			s += '-'
+			s += '-)'
 
-		s += ' '
+		s += '\n'
 
+		s += 'Pr('
 		if self.V == ZERO:
-			s += '0'
+			s += '0,'
 		elif self.V == POS:
-			s += '+' 
+			s += '+,' 
 		else:
-			s += 'M' 
+			s += 'M,' 
 
 		# self.string += ' DV: '
 		if self.DV == ZERO:
-			s += '0'
+			s += '0)'
 		elif self.DV == POS:
-			s += '+' 
+			s += '+)' 
 		else:
-			s += '-'
+			s += '-)'
 
-		s += ' '
-		
+		s += ' OF('
+
+		# s += 'V: '
 		if self.V == ZERO:
-			s += '0'
+			s += '0,'
 		elif self.V == POS:
-			s += '+' 
+			s += '+,' 
 		else:
-			s += 'M' 
+			s += 'M,' 
 
 		# self.string += ' DV: '
 		if self.DV == ZERO:
-			s += '0'
+			s += '0)'
 		elif self.DV == POS:
-			s += '+' 
+			s += '+)' 
 		else:
-			s += '-'
+			s += '-)'
 
 		# s += '\n'
 		return s
@@ -157,6 +167,8 @@ def buildAllStates ():
 	AllStates.append(State(POS, NEG, MAX, NEG))
 	AllStates.append(State(POS, ZERO, MAX, NEG))# 23
 	AllStates.append(State(POS, POS, MAX, NEG))
+	for i in range(len(AllStates)):
+		index[AllStates[i].toString()] = i+1
 def addConnection(i, j, Connection):
 	global AllStates
 	Connection.append((AllStates[i-1].toString(), AllStates[j-1].toString()))
@@ -283,9 +295,11 @@ def trace (state, DIFlist):
 
 def drawTrace (states, conn, connInter):
 	# dot = Digraph (comment = 'trace')
-	dot = Digraph(name='pet-shop', node_attr={'shape': 'note'})
+	dot = Digraph(name='pet-shop', node_attr={'shape': 'note','labeljust': 'r'})
+	index = 1
 	for s in sum(states.values(), []):
-		dot.node(s.toString(), s.status(0))
+		dot.node(s.toString(), s.status(index))
+		index += 1
 
 	l = sum(conn.values(), [])
 	k = sum(connInter.values(), [])
@@ -297,9 +311,11 @@ def drawTrace (states, conn, connInter):
 
 def drawShortestPath(states, conn, connInter, path):
 	# dot = Digraph (comment = 'trace')
-	dot = Digraph(name='pet-shop', node_attr={'shape': 'note'})
+	dot = Digraph(name='pet-shop', node_attr={'shape': 'note','labeljust': 'r'})
+	index = 1
 	for s in sum(states.values(), []):
-		dot.node(s.toString(), s.status(0))
+		dot.node(s.toString(), s.status(index))
+		index += 1
 
 	l = sum(conn.values(), [])
 	k = sum(connInter.values(), [])
@@ -449,9 +465,10 @@ def  main():
 	buildConnections ()
 	# draw()
 	s = State(ZERO,POS,ZERO,ZERO)
-	DIFlist = [POS,ZERO,NEG] #[NEG, ZERO,POS]
+	DIFlist = [POS,ZERO,NEG,ZERO,POS,ZERO,NEG]
+	DIFlist2 = []
+	DIFlist2 = copy.copy(DIFlist)
 	if DIFlist[-1] != ZERO:
-		DIFlist2 = copy.copy(DIFlist)
 		DIFlist2.append(ZERO)
 	(states, conn, connInter) = trace(s, DIFlist2)
 	# s = State(ZERO,POS,ZERO,ZERO)
