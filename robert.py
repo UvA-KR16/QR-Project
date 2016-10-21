@@ -55,7 +55,7 @@ class State ():
 		else:
 			s += '-)'
 
-		s += '\n'
+		s += r"\n"
 
 		# self.string += 'V: '
 		s += 'V('
@@ -94,7 +94,7 @@ class State ():
 		else:
 			s += '-)'
 
-		s += '\n'
+		s += r"\n"
 
 		s += 'Pr('
 		if self.V == ZERO:
@@ -465,21 +465,118 @@ def  main():
 	buildConnections ()
 	# draw()
 	s = State(ZERO,POS,ZERO,ZERO)
-	DIFlist = [POS,ZERO,NEG,ZERO,POS,ZERO,NEG]
-	DIFlist2 = []
-	DIFlist2 = copy.copy(DIFlist)
-	if DIFlist[-1] != ZERO:
-		DIFlist2.append(ZERO)
-	(states, conn, connInter) = trace(s, DIFlist2)
-	# s = State(ZERO,POS,ZERO,ZERO)
-	# DIFlist = [POS, ZERO,NEG,ZERO]
-	# (states, conn, connInter) = trace(s, DIFlist)
-	# drawTrace(states, conn, connInter)
-	path =  shortestPath(s, states, conn, connInter, DIFlist2)
-	print 'print path: '
-	for p in path:
-		print p.toString()
-	drawShortestPath(states, conn, connInter, path)
+	# ask for a state
+	invalid = True
+	V = INF
+	IF = INF
+	DIF = INF
+	DV = INF
+	while (invalid): 
+		x = raw_input ('input your state in the format V|IF|DIF. For example +|0|0\n')
+		v = x[0]
+		i = x[2] 
+		di  = x[4]
+
+		print v, i , di
+		invalid = False
+		if v == '+':
+			V = POS
+		elif v == '-':
+			invalid = True
+		elif v == 'M':
+			V = MAX
+		elif v == '0':
+			V = ZERO
+		else:
+			invalid = True
+
+		if i == '+':
+			IF = POS
+		elif i == '-':
+			invalid = True
+		elif i == 'M':
+			invalid = True
+		elif i == '0':
+			IF = ZERO
+		else:
+			invalid = True
+
+		if di == '+':
+			DIF = POS
+		elif di == '-':
+			DIF = NEG
+		elif di == 'M':
+			invalid = True
+		elif di == '0':
+			DIF = ZERO
+		else:
+			invalid = True
+
+		if invalid:
+			print 'Your input is invalid, please input again'
+	print 'creating a state: ', V, ' ', IF, ' ', DIF
+	if IF == POS and V == ZERO:
+		DV = POS
+	elif IF == ZERO and (V == POS or V == MAX):
+		DV = NEG 
+	else:
+		DV = ZERO
+
+	s = State(IF, DIF, V, DV)
+
+	DIFList = []
+	DIFSteady = [ZERO]
+	DIFIncreasing = [POS, ZERO]
+	DIFDecreasing = [NEG, ZERO]
+	DIFParabolaPos = [POS, ZERO, NEG]
+	DIFParabolaNeg = [NEG, ZERO, POS]
+	DIFSinusoidal = [POS, ZERO, NEG, ZERO, POS, ZERO]
+	
+	valid = False
+	while not valid:
+		valid = True
+		print 'input the exogenous quantity behaviour as one of the following'
+		x = raw_input ('Steady, Increasing, Decreasing, ParabolaPos, ParabolaNeg, Sinusoidal :\n')
+
+		if (x == 'Steady' and DIF == ZERO):
+			DIFList = DIFSteady
+		elif x == 'Increasing' and DIF == POS:
+			DIFlist = DIFIncreasing
+		elif x == 'Decreasing' and DIF == NEG:
+			DIFlist = DIFDecreasing
+		elif x == 'ParabolaPos' and DIF == POS:
+			DIFlist = DIFParabolaPos
+		elif x == 'ParabolaNeg' and DIF == NEG:
+			DIFlist = DIFParabolaNeg
+		elif x == 'Sinusoidal' and DIF == POS:
+			DIFlist = DIFSinusoidal
+		else: 
+			valid = False
+			print 'input is invalid or in contradictino with the initial state'
+
+	print 'Input complete. Start the reasoning!'
+
+
+	# # ask for input of DIF:
+
+	# DIFlist = [POS,ZERO,NEG,ZERO,POS,ZERO,NEG]
+	DIFList2 = []
+	DIFList2 = copy.copy(DIFList) # towards a static terminating state
+
+	if DIFList[-1] != ZERO:
+		DIFList2.append(ZERO)
+	(states, conn, connInter) = trace(s, DIFList2)
+
+
+	# # s = State(ZERO,POS,ZERO,ZERO)
+	# # DIFlist = [POS, ZERO,NEG,ZERO]
+	# # (states, conn, connInter) = trace(s, DIFlist)
+	# # drawTrace(states, conn, connInter)
+	# path =  shortestPath(s, states, conn, connInter, DIFlist2)
+	# print 'print path: '
+	# for p in path:
+	# 	print p.toString()
+	# drawShortestPath(states, conn, connInter, path)
 
 
 
