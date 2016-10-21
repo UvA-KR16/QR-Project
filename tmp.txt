@@ -1,0 +1,65 @@
+Input your state in the format V|IF. (notation: M = Max, 0 = Zero, + = Pos, - Neg)
+ For example +|0
+Input the exogenous quantity behaviour as one of the following (must be consistent with your state)
+Steady, Increasing, Decreasing, ParabolaPos, ParabolaNeg, Sinusoidal :
+For Example: ParabolaPos
+Input complete. Start the reasoning!
+
+
+------------------------ Step 1 --------------------------------
+start to generate the shortest path of every state from  2021
+-------------------------------------step 2---------------------------------------
+Now that we have computed the shortest distance of all the states, we need to obtain the path
+First, we compute the best terminating state:
+we found a stable terminating state (DIF = 0, DV = 0) with the shortest distance:  2131
+At step  1
+Due to the negative effect of OF on V, which reduced the volumn
+	The previous state IF( POS ,  NEG )
+			 V( POS ,  ZERO ) H( POS ,  ZERO ) 
+			Pr( POS ,  ZERO ) OF( POS ,  ZERO )
+	The consequent state IF( POS ,  NEG )
+			 V( POS ,  ZERO ) H( POS ,  ZERO ) 
+			Pr( POS ,  ZERO ) OF( POS ,  ZERO )
+At step  2
+Due to the negative effect of OF on V, which reduced the volumn
+	The previous state IF( POS ,  NEG )
+			 V( POS ,  ZERO ) H( POS ,  ZERO ) 
+			Pr( POS ,  ZERO ) OF( POS ,  ZERO )
+	The consequent state IF( POS ,  NEG )
+			 V( POS ,  NEG ) H( POS ,  NEG ) 
+			Pr( POS ,  NEG ) OF( POS ,  NEG )
+At step  3
+Due to the effect of the change of DIF from NEG  to  ZERO
+	The previous state IF( POS ,  NEG )
+			 V( POS ,  NEG ) H( POS ,  NEG ) 
+			Pr( POS ,  NEG ) OF( POS ,  NEG )
+	The consequent state IF( POS ,  ZERO )
+			 V( POS ,  NEG ) H( POS ,  NEG ) 
+			Pr( POS ,  NEG ) OF( POS ,  NEG )
+At step  4
+Due to the effect of the change of DIF from ZERO  to  POS
+	The previous state IF( POS ,  ZERO )
+			 V( POS ,  NEG ) H( POS ,  NEG ) 
+			Pr( POS ,  NEG ) OF( POS ,  NEG )
+	The consequent state IF( POS ,  POS )
+			 V( POS ,  ZERO ) H( POS ,  ZERO ) 
+			Pr( POS ,  ZERO ) OF( POS ,  ZERO )
+At step  5
+Due to the negative effect of OF on V, which reduced the volumn
+	The previous state IF( POS ,  POS )
+			 V( POS ,  ZERO ) H( POS ,  ZERO ) 
+			Pr( POS ,  ZERO ) OF( POS ,  ZERO )
+	The consequent state IF( POS ,  POS )
+			 V( POS ,  POS ) H( POS ,  POS ) 
+			Pr( POS ,  POS ) OF( POS ,  POS )
+At step  6
+Due to the effect of the change of DIF from POS  to  ZERO
+	The previous state IF( POS ,  POS )
+			 V( POS ,  POS ) H( POS ,  POS ) 
+			Pr( POS ,  POS ) OF( POS ,  POS )
+	The consequent state IF( POS ,  ZERO )
+			 V( MAX ,  ZERO ) H( MAX ,  ZERO ) 
+			Pr( MAX ,  ZERO ) OF( MAX ,  ZERO )
+
+ You will find a graphical representation of this path in your local folder as shortest.gv 
+If you have a viewer of PDF, you may open the file shortest.gv.pdf to view the shortest path

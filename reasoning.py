@@ -25,6 +25,17 @@ UnstableStates =[]
 
 index = {}
 
+def toStr (num):
+	if num == ZERO:
+		return 'ZERO'
+	elif num == POS:
+		return 'POS'
+	elif num == NEG:
+		return 'NEG'
+	elif num == MAX:
+		return 'MAX'
+	else: return 'ERROR'
+
 class State ():
 	def __init__(self, IF, DIF, V, DV):
 		self.IF = IF
@@ -328,12 +339,15 @@ def drawShortestPath(states, conn, connInter, path):
 			dot.edge(s.toString(), t.toString(), color = 'red')
 		else: 
 			dot.edge(s.toString(), t.toString())
-	dot.render('trace.gv', view=True)
+	dot.render('shortest.gv', view=True)
 
 
 				
 
 def shortestPath (s0, states, conn, connInter, DIFList):
+	print '------------------------ Step 1 --------------------------------'
+	print 'start to generate the shortest path of every state from ', s0.toString()
+
 	backtrace = {} 
 	m = []
 	for d in DIFList:
@@ -348,10 +362,10 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 	# print 'start from ', s0.toString()
 	for i in range(len(DIFList)):
 		d = DIFList[i]
-		# print '---------- ', i
-		# print 'There are ', len(states[i]), ' states'
-		# print 'There are ', len(conn[i]), ' inner connections'
-		# print 'There are ', len(connInter[i]), ' inter connections'
+		# print 'This is level ', i
+		# print '\tThere are ', len(states[i]), ' states'
+		# print '\tThere are ', len(conn[i]), ' inner connections'
+		# print '\tThere are ', len(connInter[i]), ' inter connections'
 		#initialise the
 		# for t in states[d]:
 		# 	if t not in m[i].keys():
@@ -371,7 +385,7 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 					if m[i][t2] > m[i][t1] + 1:
 						m[i][t2] = m[i][t1] + 1
 						backtrace[(i,t2)] = (i, t1)
-						print t1.toString() , ' -> ', t2.toString(), 'distance: ', m[i][t2]
+						# print '\t\tINNER: update the distance from',  t1.toString() , ' to ', t2.toString(), 'as ', m[i][t2]
 			toVisit.remove(nextVisit) #???
 			# after visiting all the nodes, select a next one to visit, it must be the losest one
 			# for e in toVisit:
@@ -400,7 +414,7 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 						if m[i+1][t2] > m[i][t1] + 1:
 							m[i+1][t2] = m[i][t1] + 1
 							backtrace[(i+1,t2)] = (i,t1)
-							print t1.toString() , ' --> ', t2.toString(), 'distance: ', m[i+1][t2]
+							# print '\t\tOUTTER: update the distance from', t1.toString() , ' to ', t2.toString(), 'as ', m[i+1][t2] ,'(for the next level)'
 
 				# print len(toVisit)
 				toVisit.remove(nextVisit)
@@ -426,34 +440,70 @@ def shortestPath (s0, states, conn, connInter, DIFList):
 	
 
  # if there is a terminating state then I use it, otehrwise, I use the shortest path one
+ 	print '-------------------------------------step 2---------------------------------------'
+	print 'Now that we have computed the shortest distance of all the states, we need to obtain the path'
+	print 'First, we compute the best terminating state:'
+
 	if len(terminatingStates) != 0:
 		for st in terminatingStates:
 			if m[lastLevelIndex][st] <= distance:
 				bestTerminating = st
 				distance = m[lastLevelIndex][st]
+		print 'we found a stable terminating state (DIF = 0, DV = 0) with the shortest distance: ', bestTerminating.toString()
 	else: 
 		dis = INF
 		for a in lastLevelStates:
 			if dis >= m[i][a]:
 				dis = m[i][a]
 				bestTerminating = a
+		print 'we cannot find a terminating state but we can start from the state with the shortest distance'
 
 
-	backlist = [bestTerminating]
+	backlist = [bestTerminating] # start from the best terminating state
 	# print 'best = ', bestTerminating.toString()
 	# print nextVisit.toString()
 	level = len(DIFList) - 1 
 	# print backtrace
-	# print level 
+	# print level
 	while bestTerminating != s0:
-		# print bestTerminating.toString()
-		(k, bestTerminating) = backtrace[(level, bestTerminating)]
-		backlist.append(bestTerminating)
+		(k, b) = backtrace[(level, bestTerminating)]
+		# print '\t This is level' , level, ' from the state ', bestTerminating.toString(), ', we trace back and get',  b.toString(), 'at level ', k 
+		bestTerminating = b
+		backlist.append(bestTerminating) # prepare for the next iteration
 		level = k
 		# print nextVisit.toString()
 	backlist.append(s0)
 	path = copy.copy(backlist)
 	path.reverse()
+
+	for i in range(len(path) -1):
+		print 'At step ', i+1
+		if path[i].DIF != path[i+1].DIF :
+			print 'Due to the effect of the change of DIF from', toStr(path[i].DIF) , ' to ', toStr(path[i+1].DIF)
+			print '\tThe previous state IF(', toStr(path[i].IF) ,', ', toStr(path[i].DIF), ')\n\t\t\t V(', toStr(path[i].V), ', ',toStr(path[i].DV), ') H(', toStr(path[i].V), ', ',toStr(path[i].DV), ') \n\t\t\tPr(', toStr(path[i].V), ', ',toStr(path[i].DV), ') OF(', toStr(path[i].V), ', ',toStr(path[i].DV) ,')'
+			print '\tThe consequent state IF(', toStr(path[i+1].IF) ,', ', toStr(path[i+1].DIF), ')\n\t\t\t V(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') H(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') \n\t\t\tPr(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') OF(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV) ,')' 
+			
+		elif path[i].DIF == path[i+1].DIF and path[i].IF != path[i+1].IF:
+			print 'Due to the effect of the change of IF from', toStr(path[i].IF), ' to ', toStr(path[i].IF)  
+			print '\tThe previous state IF(', toStr(path[i].IF) ,', ', toStr(path[i].DIF), ')\n\t\t\t V(', toStr(path[i].V), ', ',toStr(path[i].DV), ') H(', toStr(path[i].V), ', ',toStr(path[i].DV), ') \n\t\t\tPr(', toStr(path[i].V), ', ',toStr(path[i].DV), ') OF(', toStr(path[i].V), ', ',toStr(path[i].DV) ,')'
+			print '\tThe consequent state IF(', toStr(path[i+1].IF) ,', ', toStr(path[i+1].DIF), ')\n\t\t\t V(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') H(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') \n\t\t\tPr(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') OF(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV) ,')' 
+			
+		elif path[i].V != MAX and path[i+1].V == MAX:
+			print 'Due to the positive effect of IF on V, which increases the volumn'
+			print '\tThe previous state IF(', toStr(path[i].IF) ,', ', toStr(path[i].DIF), ')\n\t\t\t V(', toStr(path[i].V), ', ',toStr(path[i].DV), ') H(', toStr(path[i].V), ', ',toStr(path[i].DV), ') \n\t\t\tPr(', toStr(path[i].V), ', ',toStr(path[i].DV), ') OF(', toStr(path[i].V), ', ',toStr(path[i].DV) ,')'
+			print '\tThe consequent state IF(', toStr(path[i+1].IF) ,', ', toStr(path[i+1].DIF), ')\n\t\t\t V(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') H(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') \n\t\t\tPr(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') OF(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV) ,')' 
+			
+		elif path[i].V != MAX and path[i+1].V != MAX:
+			print 'Due to the negative effect of OF on V, which reduced the volumn'
+			print '\tThe previous state IF(', toStr(path[i].IF) ,', ', toStr(path[i].DIF), ')\n\t\t\t V(', toStr(path[i].V), ', ',toStr(path[i].DV), ') H(', toStr(path[i].V), ', ',toStr(path[i].DV), ') \n\t\t\tPr(', toStr(path[i].V), ', ',toStr(path[i].DV), ') OF(', toStr(path[i].V), ', ',toStr(path[i].DV) ,')'
+			print '\tThe consequent state IF(', toStr(path[i+1].IF) ,', ', toStr(path[i+1].DIF), ')\n\t\t\t V(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') H(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') \n\t\t\tPr(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') OF(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV) ,')' 
+			
+		else:
+			print 'Due to the uncertain impact of both IF and OF on V'
+			print '\tThe previous state IF(', toStr(path[i].IF) ,', ', toStr(path[i].DIF), ')\n\t\t\t V(', toStr(path[i].V), ', ',toStr(path[i].DV), ') H(', toStr(path[i].V), ', ',toStr(path[i].DV), ') \n\t\t\tPr(', toStr(path[i].V), ', ',toStr(path[i].DV), ') OF(', toStr(path[i].V), ', ',toStr(path[i].DV) ,')'
+			print '\tThe consequent state IF(', toStr(path[i+1].IF) ,', ', toStr(path[i+1].DIF), ')\n\t\t\t V(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') H(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') \n\t\t\tPr(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV), ') OF(', toStr(path[i+1].V), ', ',toStr(path[i+1].DV) ,')' 
+			
+
 	# print 'is it empty? ', type(path)
 	return path
 
@@ -472,12 +522,12 @@ def  main():
 	DIF = INF
 	DV = INF
 	while (invalid): 
-		x = raw_input ('input your state in the format V|IF|DIF. For example +|0|+\n')
+		x = raw_input ('Input your state in the format V|IF. (notation: M = Max, 0 = Zero, + = Pos, - Neg)\n For example +|0\n')
 		v = x[0]
 		i = x[2] 
-		di  = x[4]
+		# di  = x[4]
 
-		print v, i , di
+		# print v, i , di
 		invalid = False
 		if v == '+':
 			V = POS
@@ -501,28 +551,20 @@ def  main():
 		else:
 			invalid = True
 
-		if di == '+':
-			DIF = POS
-		elif di == '-':
-			DIF = NEG
-		elif di == 'M':
-			invalid = True
-		elif di == '0':
-			DIF = ZERO
-		else:
-			invalid = True
+		# if di == '+':
+		# 	DIF = POS
+		# elif di == '-':
+		# 	DIF = NEG
+		# elif di == 'M':
+		# 	invalid = True
+		# elif di == '0':
+		# 	DIF = ZERO
+		# else:
+		# 	invalid = True
 
 		if invalid:
 			print 'Your input is invalid, please input again'
-	print 'creating a state: ', V, ' ', IF, ' ', DIF
-	if IF == POS and V == ZERO:
-		DV = POS
-	elif IF == ZERO and (V == POS or V == MAX):
-		DV = NEG 
-	else:
-		DV = ZERO
-
-	s = State(IF, DIF, V, DV)
+	# print 'creating a state: ', V, ' ', IF, ' ', DIF
 
 	DIFList = []
 	DIFSteady = [ZERO]
@@ -535,26 +577,36 @@ def  main():
 	valid = False
 	while not valid:
 		valid = True
-		print 'input the exogenous quantity behaviour as one of the following'
-		x = raw_input ('Steady, Increasing, Decreasing, ParabolaPos, ParabolaNeg, Sinusoidal :\n')
+		print 'Input the exogenous quantity behaviour as one of the following (must be consistent with your state)'
+		x = raw_input ('Steady, Increasing, Decreasing, ParabolaPos, ParabolaNeg, Sinusoidal :\nFor Example: ParabolaPos\n')
 
-		if (x == 'Steady' and DIF == ZERO):
+		if (x == 'Steady'):
 			DIFList = DIFSteady
-		elif x == 'Increasing' and DIF == POS:
+		elif x == 'Increasing':
 			DIFList = DIFIncreasing
-		elif x == 'Decreasing' and DIF == NEG:
+		elif x == 'Decreasing':
 			DIFList = DIFDecreasing
-		elif x == 'ParabolaPos' and DIF == POS:
+		elif x == 'ParabolaPos':
 			DIFList = DIFParabolaPos
-		elif x == 'ParabolaNeg' and DIF == NEG:
+		elif x == 'ParabolaNeg':
 			DIFList = DIFParabolaNeg
-		elif x == 'Sinusoidal' and DIF == POS:
+		elif x == 'Sinusoidal':
 			DIFList = DIFSinusoidal
 		else: 
 			valid = False
-			print 'input is invalid or in contradictino with the initial state'
+			print 'Your input is invalid or in contradictino with the initial state'
 
-	print 'Input complete. Start the reasoning!'
+	print 'Input complete. Start the reasoning!\n\n'
+	DIF = DIFList[0] 
+
+	if IF == POS and V == ZERO:
+		DV = POS
+	elif IF == ZERO and (V == POS or V == MAX):
+		DV = NEG 
+	else:
+		DV = ZERO
+
+	s = State(IF, DIF, V, DV)
 
 
 	# # ask for input of DIF:
@@ -563,7 +615,7 @@ def  main():
 	DIFList2 = []
 	DIFList2 = copy.copy(DIFList) # towards a static terminating state
 
-	print 'DIF list: ', DIFList 
+	# print 'DIF list: ', DIFList 
 	if DIFList[-1] != ZERO:
 		DIFList2.append(ZERO)
 	(states, conn, connInter) = trace(s, DIFList2)
@@ -574,10 +626,12 @@ def  main():
 	(states, conn, connInter) = trace(s, DIFList2)
 	# drawTrace(states, conn, connInter)
 	path =  shortestPath(s, states, conn, connInter, DIFList2)
-	print 'the shortest path is as follows: '
-	for p in path:
-		print p.toString(), 
+	# print '\nIn summary, the shortest path found is therefore as follows: '
+	# for p in path:
+		# print p.toString(), 
 	drawShortestPath(states, conn, connInter, path)
+	print '\n You will find a graphical representation of this path in your local folder as shortest.gv '
+	print 'If you have a viewer of PDF, you may open the file shortest.gv.pdf to view the shortest path'
 
 
 
